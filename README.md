@@ -1,2 +1,2 @@
 # dua-template
-Software package template based on the Distributed Unified Architecture.
+Architecture template based on the Distributed Unified Architecture.
