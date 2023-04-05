@@ -1,12 +1,12 @@
 {
-  "name": "TARGET",
+  "name": "SERVICE",
   "dockerComposeFile": [
     "docker-compose.yaml"
   ],
   // Only start this service
-  "service": "TARGET",
+  "service": "SERVICE",
   "runServices": [
-    "TARGET"
+    "SERVICE"
   ],
   // Stop container if VS Code is shut down
   "shutdownAction": "stopCompose",
