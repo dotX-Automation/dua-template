@@ -32,7 +32,9 @@ services:
         "trap 'exit 0' TERM; sleep infinity & wait"
       ]
     volumes:
-      - ../../:/home/neo/workspace
+      - type: bind
+        source: ../../
+        target: /home/neo/workspace
       - ./aliases.sh:/home/neo/.aliases.sh:rw
       - ./bashrc:/home/neo/.bashrc:re
       - ./colcon-defaults.yaml:/home/neo/.colcon/defaults.yaml:rw
