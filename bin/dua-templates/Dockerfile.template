@@ -26,7 +26,7 @@ ENV HOME=/home/neo
 RUN mkdir ${HOME}/workspace && \
     chown neo:neo ${HOME}/workspace
 
-# Create shell history file
+# Create directory for shell history file
 RUN mkdir ${HOME}/zsh_history && \
     chown neo:neo ${HOME}/zsh_history
 
