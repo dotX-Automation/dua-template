@@ -7,7 +7,7 @@
 #
 # April 5, 2023
 
-# shellcheck disable=SC1003
+# shellcheck disable=SC1003,SC2207
 
 set -o errexit
 set -o nounset
@@ -27,6 +27,16 @@ if [[ "${1-}" =~ ^-*h(elp)?$ ]]; then
   usage
   exit 1
 fi
+
+# Global variables
+declare -i CREATE
+declare -i MODIFY
+declare -i DELETE
+declare -i CLEAR
+declare -i ADD
+declare -i REMOVE
+declare -a ADD_UNITS
+declare -a REMOVE_UNITS
 
 # Function to check that this script is executed in the root directory of the current repo.
 function check_root {
@@ -79,14 +89,21 @@ function add_units {
     clear_units "${TARGET}"
   fi
 
+  # Get the lenght of the array
+  local -i LEN
+  LEN="${#ADD_UNITS[@]}"
+
   # Add the specified units
-  for UNIT in "${ADD_UNITS[@]}"; do
+  #for UNIT in "${ADD_UNITS[@]}"; do
+  for ((i = LEN - 1; i >= 0; i--)); do
+    UNIT=${ADD_UNITS[i]}
     echo "Adding unit ${UNIT} ..."
-    sed -n "/### ${UNIT} START ###/,/### ${UNIT} END ###/p" \
-        "src/${UNIT}/docker/container-${TARGET}/Dockerfile" |
-      sed -e 'r /dev/stdin' \
-          -e '/### IMAGE SETUP END ###/i\' \
-          "docker/container-${TARGET}/Dockerfile"
+    sed -n \
+      "/### ${UNIT} START ###/,/### ${UNIT} END ###/p" \
+      "src/${UNIT}/docker/container-${TARGET}/Dockerfile" |
+      sed -i \
+        '/^### IMAGE SETUP START ###$/r /dev/stdin' \
+        "docker/container-${TARGET}/Dockerfile"
   done
 }
 
@@ -99,7 +116,7 @@ function remove_units {
   # Remove the specified units
   for UNIT in "${REMOVE_UNITS[@]}"; do
     echo "Removing unit ${UNIT} ..."
-    sed -i "/### ${UNIT} START ###/,/### ${UNIT} END ###/d" "docker/container-${TARGET}/Dockerfile"
+    sed -i "/^### ${UNIT} START ###$/,/^### ${UNIT} END ###$/d" "docker/container-${TARGET}/Dockerfile"
   done
 }
 
@@ -111,9 +128,10 @@ function clear_units {
 
   # Remove all units
   echo "Removing all units from target ${TARGET} ..."
-  sed -e '/### IMAGE SETUP START ###/,/### IMAGE SETUP END ###/d' \
-    -e '/### IMAGE SETUP START ###/p' \
-    -e '/### IMAGE SETUP END ###/p' \
+  sed -i \
+    -e '/^### IMAGE SETUP START ###$/,/^### IMAGE SETUP END ###$/d' \
+    -e '/^### IMAGE SETUP START ###$/p' \
+    -e '/^### IMAGE SETUP END ###$/p' \
     "docker/container-${TARGET}/Dockerfile"
 }
 
@@ -127,7 +145,7 @@ function create_target {
   if ! check_target "${TARGET}"; then
     exit 1
   fi
-  if [[ -z "${NAME}" || -z "${HPSW}" ]]; then
+  if [[ -z "${NAME}" || -z "${PASSWORD}" ]]; then
     echo >&2 "ERROR: Missing arguments"
     usage
     exit 1
@@ -136,7 +154,7 @@ function create_target {
     echo >&2 "ERROR: Target ${TARGET} already exists"
     exit 1
   fi
-  HPSW=$(mkpasswd -m sha-512 intelsyslab "${PASSWORD}")
+  HPSW=$(mkpasswd -m sha-512 "${PASSWORD}" intelsyslab)
   SERVICE="${NAME}-${TARGET}"
   echo "Project name: ${NAME}"
   echo "Servcice name: ${SERVICE}"
@@ -148,7 +166,7 @@ function create_target {
   # Copy standard files
   cp "bin/dua-templates/context/aliases.sh" "docker/container-${TARGET}/"
   cp "bin/dua-templates/context/bashrc" "docker/container-${TARGET}/"
-  cp "bin/dua-templates/context/colcon-defaults.yaml.template" "docker/container-${TARGET}/colcon-defaulst.yaml"
+  cp "bin/dua-templates/context/colcon-defaults.yaml.template" "docker/container-${TARGET}/colcon-defaults.yaml"
   cp "bin/dua-templates/context/commands.sh" "docker/container-${TARGET}/"
   cp "bin/dua-templates/context/nanorc" "docker/container-${TARGET}/"
   cp "bin/dua-templates/context/p10k.zsh" "docker/container-${TARGET}/"
@@ -175,7 +193,7 @@ function create_target {
   # Copy and configure Dockerfile, adding units if requested
   cp "bin/dua-templates/Dockerfile.template" "docker/container-${TARGET}/Dockerfile"
   sed -i "s/TARGET/${TARGET}/g" "docker/container-${TARGET}/Dockerfile"
-  sed -i "s/HPSW/${HPSW}/g" "docker/container-${TARGET}/Dockerfile"
+  sed -i "s/HPSW/${HPSW//\//\\/}/g" "docker/container-${TARGET}/Dockerfile"
   if [[ -n "${ADD-}" ]]; then
     add_units "${TARGET}"
   fi
@@ -286,15 +304,15 @@ while getopts ":a:r:" opt; do
   case ${opt} in
   a)
     ADD=1
-    ADD_UNITS=$(units_to_array "${OPTARG}")
-    if [[ -z "${ADD_UNITS}" ]]; then
+    ADD_UNITS=($(units_to_array "${OPTARG}"))
+    if [[ "${#ADD_UNITS[@]}" -eq "0" ]]; then
       exit 1
     fi
     ;;
   r)
     REMOVE=1
-    REMOVE_UNITS=$(units_to_array "${OPTARG}")
-    if [[ -z "${REMOVE_UNITS}" ]]; then
+    REMOVE_UNITS=($(units_to_array "${OPTARG}"))
+    if [[ "${#REMOVE_UNITS[@]}" -eq "0" ]]; then
       exit 1
     fi
     ;;
@@ -310,10 +328,11 @@ while getopts ":a:r:" opt; do
     ;;
   esac
 done
+shift $((OPTIND -1))
 
 # Check: create accepts only ADD
-if [[ -n "${CREATE-}" ]]; then
-  if [[ -n "${ADD-}" && -z "${REMOVE-}" ]]; then
+if [[ -n "${CREATE-}" && -n "${ADD-}" ]]; then
+  if [[ -z "${REMOVE-}" ]]; then
     true
   else
     echo >&2 "ERROR: Invalid options for create"

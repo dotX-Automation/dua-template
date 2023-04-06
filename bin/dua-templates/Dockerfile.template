@@ -13,12 +13,11 @@ ARG USER_UID=1000
 ENV DEBIAN_FRONTEND=noninteractive
 
 ### IMAGE SETUP START ###
-
 ### IMAGE SETUP END ###
 
 # Create a user with Zsh as shell, hashed password, and add it to the sudoers
 # To generate the hashed password, run:
-#   mkpasswd -m sha-512 -S intelsyslab PASSWORD
+#   mkpasswd -m sha-512 -S PASSWORD intelsyslab
 RUN useradd -r -m -s /usr/bin/zsh -u ${USER_UID} -G adm,dialout,internal,plugdev,sudo,tty,video -p 'HPSW' neo
 ENV HOME=/home/neo
 
@@ -40,6 +39,7 @@ WORKDIR ${HOME}
 # Copy user configuration files
 COPY --chown=neo:neo ./aliases.sh ./.aliases.sh
 COPY --chown=neo:neo ./bashrc ./.bashrc
+COPY --chown=neo:neo ./colcon-defaults.yaml /home/neo/.colcon/defaults.yaml
 COPY --chown=neo:neo ./commands.sh ./.commands.sh
 COPY --chown=neo:neo ./nanorc ./.nanorc
 COPY --chown=neo:neo ./ros2.sh ./.ros2.sh
