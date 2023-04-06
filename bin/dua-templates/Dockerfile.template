@@ -5,7 +5,7 @@
 #
 # April 5, 2023
 
-FROM --platform=PLATFORM intelligentsystemslabutv/dua-foundation:TARGET
+FROM intelligentsystemslabutv/dua-foundation:TARGET
 
 # Change this if you encounter problems with the default user
 ARG USER_UID=1000
