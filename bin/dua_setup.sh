@@ -19,6 +19,7 @@ function usage {
   echo >&2 "    dua_setup.sh create [-a UNIT1,UNIT2,...] NAME TARGET PASSWORD"
   echo >&2 "    dua_setup.sh modify [-a UNIT1,UNIT2,...] [-r UNIT1,UNIT2,...] TARGET"
   echo >&2 "    dua_setup.sh delete TARGET"
+  echo >&2 "    dua_setup.sh clear TARGET"
   echo >&2 "See the README for more info."
 }
 
@@ -73,11 +74,19 @@ function add_units {
   local TARGET
   TARGET="${1-}"
 
+  # If we need to add multiple units, clear the target first
+  if [[ "${#ADD_UNITS[@]}" -gt "1" ]]; then
+    clear_units "${TARGET}"
+  fi
+
   # Add the specified units
   for UNIT in "${ADD_UNITS[@]}"; do
-    echo "Adding module ${UNIT} ..."
-    sed -n "/### ${UNIT} START ###/,/### ${UNIT} END ###/p" "src/${UNIT}/docker/container-${TARGET}/Dockerfile" |
-      sed -e '/### IMAGE SETUP END ###/i\' -e 'r /dev/stdin' "docker/container-${TARGET}/Dockerfile"
+    echo "Adding unit ${UNIT} ..."
+    sed -n "/### ${UNIT} START ###/,/### ${UNIT} END ###/p" \
+        "src/${UNIT}/docker/container-${TARGET}/Dockerfile" |
+      sed -e 'r /dev/stdin' \
+          -e '/### IMAGE SETUP END ###/i\' \
+          "docker/container-${TARGET}/Dockerfile"
   done
 }
 
@@ -92,6 +101,20 @@ function remove_units {
     echo "Removing unit ${UNIT} ..."
     sed -i "/### ${UNIT} START ###/,/### ${UNIT} END ###/d" "docker/container-${TARGET}/Dockerfile"
   done
+}
+
+# Function to clear all units from a target.
+function clear_units {
+  # Parse the arguments
+  local TARGET
+  TARGET="${1-}"
+
+  # Remove all units
+  echo "Removing all units from target ${TARGET} ..."
+  sed -e '/### IMAGE SETUP START ###/,/### IMAGE SETUP END ###/d' \
+    -e '/### IMAGE SETUP START ###/p' \
+    -e '/### IMAGE SETUP END ###/p' \
+    "docker/container-${TARGET}/Dockerfile"
 }
 
 # Function to create a new target.
@@ -177,6 +200,11 @@ function modify_target {
     remove_units "${TARGET}"
   fi
 
+  # Clear units, if requested
+  if [[ -n "${CLEAR-}" ]]; then
+    clear_units "${TARGET}"
+  fi
+
   # Add units, if requested
   if [[ -n "${ADD-}" ]]; then
     add_units "${TARGET}"
@@ -191,10 +219,32 @@ function delete_target {
   if ! check_target "${TARGET}"; then
     exit 1
   fi
+  if [[ ! -d "docker/container-${TARGET}" ]]; then
+    echo >&2 "ERROR: Target ${TARGET} does not exist"
+    exit 1
+  fi
   echo "Removing target ${TARGET} ..."
 
   # Remove the folder corresponding to the requested target
   rm -rf "docker/container-${TARGET}"
+}
+
+# Function to clear units from an existing target.
+function clear_target {
+  # Parse and check argument
+  local TARGET
+  TARGET="${1-}"
+  if ! check_target "${TARGET}"; then
+    exit 1
+  fi
+  if [[ ! -d "docker/container-${TARGET}" ]]; then
+    echo >&2 "ERROR: Target ${TARGET} does not exist"
+    exit 1
+  fi
+  echo "Clearing units from target ${TARGET} ..."
+
+  # Remove all units
+  clear_units "${TARGET}"
 }
 
 # Check that the path is correct
@@ -219,6 +269,9 @@ modify)
   ;;
 delete)
   DELETE=1
+  ;;
+clear)
+  CLEAR=1
   ;;
 *)
   echo >&2 "ERROR: Invalid command: ${1-}"
@@ -280,6 +333,17 @@ if [[ -n "${MODIFY-}" ]]; then
   fi
 fi
 
+# Check: clear accepts no options
+if [[ -n "${CLEAR-}" ]]; then
+  if [[ -z "${ADD-}" && -z "${REMOVE-}" ]]; then
+    true
+  else
+    echo >&2 "ERROR: Invalid options for clear"
+    usage
+    exit 1
+  fi
+fi
+
 # Execute the command
 if [[ -n "${CREATE-}" ]]; then
   create_target "${@}"
@@ -287,4 +351,6 @@ elif [[ -n "${MODIFY-}" ]]; then
   modify_target "${@}"
 elif [[ -n "${DELETE-}" ]]; then
   delete_target "${@}"
+elif [[ -n "${CLEAR-}" ]]; then
+  clear_target "${@}"
 fi
