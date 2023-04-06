@@ -43,18 +43,18 @@ if ! command -v mkpasswd &>/dev/null; then
   exit 1
 fi
 
-# Function to convert a comma-separated list of modules to an array and return it.
-function modules_to_array {
-  local MODULES IFS
-  IFS=',' read -r -a MODULES <<<"${1-}"
+# Function to convert a comma-separated list of units to an array and return it.
+function units_to_array {
+  local UNITS IFS
+  IFS=',' read -r -a UNITS <<<"${1-}"
 
   # Check array length
-  if [[ "${#MODULES[@]}" == "0" ]]; then
-    echo >&2 "ERROR: No modules specified"
+  if [[ "${#UNITS[@]}" == "0" ]]; then
+    echo >&2 "ERROR: No units specified"
     return 1
   fi
 
-  echo "${MODULES[@]}"
+  echo "${UNITS[@]}"
 }
 
 # Function to check that a target is valid.
@@ -67,31 +67,30 @@ function check_target {
   fi
 }
 
-# Function to add modules to a target.
-function add_modules {
+# Function to add units to a target.
+function add_units {
   # Parse the arguments
   local TARGET
   TARGET="${1-}"
 
-  # Add the specified modules
-  for MODULE in "${ADD_MODULES[@]}"; do
-    # Add the module at the beginning of the Dockerfile
-    echo "Adding module ${MODULE} ..."
-    sed -n "/### ${MODULE} START ###/,/### ${MODULE} END ###/p" "src/${MODULE}/docker/container-${TARGET}/Dockerfile" |
+  # Add the specified units
+  for UNIT in "${ADD_UNITS[@]}"; do
+    echo "Adding module ${UNIT} ..."
+    sed -n "/### ${UNIT} START ###/,/### ${UNIT} END ###/p" "src/${UNIT}/docker/container-${TARGET}/Dockerfile" |
       sed -e '/### IMAGE SETUP END ###/i\' -e 'r /dev/stdin' "docker/container-${TARGET}/Dockerfile"
   done
 }
 
-# Function to remove modules from a target.
-function remove_modules {
+# Function to remove units from a target.
+function remove_units {
   # Parse the arguments
   local TARGET
   TARGET="${1-}"
 
-  # Remove the specified modules
-  for MODULE in "${REMOVE_MODULES[@]}"; do
-    echo "Removing module ${MODULE} ..."
-    sed -i "/### ${MODULE} START ###/,/### ${MODULE} END ###/d" "docker/container-${TARGET}/Dockerfile"
+  # Remove the specified units
+  for UNIT in "${REMOVE_UNITS[@]}"; do
+    echo "Removing unit ${UNIT} ..."
+    sed -i "/### ${UNIT} START ###/,/### ${UNIT} END ###/d" "docker/container-${TARGET}/Dockerfile"
   done
 }
 
@@ -150,12 +149,12 @@ function create_target {
   fi
   sed -i "s/SERVICE/${SERVICE}/g" "docker/container-${TARGET}/docker-compose.yml"
 
-  # Copy and configure Dockerfile
+  # Copy and configure Dockerfile, adding units if requested
   cp "bin/dua-templates/Dockerfile.template" "docker/container-${TARGET}/Dockerfile"
   sed -i "s/TARGET/${TARGET}/g" "docker/container-${TARGET}/Dockerfile"
   sed -i "s/HPSW/${HPSW}/g" "docker/container-${TARGET}/Dockerfile"
   if [[ -n "${ADD-}" ]]; then
-    add_modules "${TARGET}"
+    add_units "${TARGET}"
   fi
 }
 
@@ -173,14 +172,14 @@ function modify_target {
   fi
   echo "Modifying target ${TARGET} ..."
 
-  # Remove modules, if requested
+  # Remove units, if requested
   if [[ -n "${REMOVE-}" ]]; then
-    remove_modules "${TARGET}"
+    remove_units "${TARGET}"
   fi
 
-  # Add modules, if requested
+  # Add units, if requested
   if [[ -n "${ADD-}" ]]; then
-    add_modules "${TARGET}"
+    add_units "${TARGET}"
   fi
 }
 
@@ -234,15 +233,15 @@ while getopts ":a:r:" opt; do
   case ${opt} in
   a)
     ADD=1
-    ADD_MODULES=$(modules_to_array "${OPTARG}")
-    if [[ -z "${ADD_MODULES}" ]]; then
+    ADD_UNITS=$(units_to_array "${OPTARG}")
+    if [[ -z "${ADD_UNITS}" ]]; then
       exit 1
     fi
     ;;
   r)
     REMOVE=1
-    REMOVE_MODULES=$(modules_to_array "${OPTARG}")
-    if [[ -z "${REMOVE_MODULES}" ]]; then
+    REMOVE_UNITS=$(units_to_array "${OPTARG}")
+    if [[ -z "${REMOVE_UNITS}" ]]; then
       exit 1
     fi
     ;;
