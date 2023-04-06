@@ -73,35 +73,12 @@ function add_modules {
   local TARGET
   TARGET="${1-}"
 
-  # If the module is one, just append it to the Dockerfile
-  if [[ "${#ADD_MODULES[@]}" == "1" ]]; then
-    MODULE="${ADD_MODULES[0]}"
-    echo "Adding module ${MODULE} ..."
-    sed -n "/### ${MODULE} START ###/,/### ${MODULE} END ###/p" "src/${MODULE}/docker/container-${TARGET}/Dockerfile" | \
-      sed -e "1i### ${MODULE} START ###" -e "\$a### ${MODULE} END ###" | \
-      sed -e '/### IMAGE SETUP END ###/i\' -e 'r /dev/stdin' "docker/container-${TARGET}/Dockerfile"
-    return 0
-  fi
-
   # Add the specified modules
-  PREV_MODULE=""
   for MODULE in "${ADD_MODULES[@]}"; do
-    # Check if the module is already present in the Dockerfile
-    if grep -q "### ${MODULE} START ###" "docker/container-${TARGET}/Dockerfile"; then
-      echo "Module ${MODULE} already present"
-      PREV_MODULE="${MODULE}"
-      continue
-    fi
-
-    if [[ -z "${PREV_MODULE}" ]]; then
-      # Add the module at the beginning of the Dockerfile
-      echo "Adding module ${MODULE} ..."
-      sed -n "/### ${MODULE} START ###/,/### ${MODULE} END ###/p" "src/${MODULE}/docker/container-${TARGET}/Dockerfile" | \
-        sed -e "1i### ${MODULE} START ###" -e "\$a### ${MODULE} END ###" | \
-        sed -e '/### IMAGE SETUP END ###/ {r /dev/stdin' -e 'd}'
-    else
-      true
-    fi
+    # Add the module at the beginning of the Dockerfile
+    echo "Adding module ${MODULE} ..."
+    sed -n "/### ${MODULE} START ###/,/### ${MODULE} END ###/p" "src/${MODULE}/docker/container-${TARGET}/Dockerfile" |
+      sed -e '/### IMAGE SETUP END ###/i\' -e 'r /dev/stdin' "docker/container-${TARGET}/Dockerfile"
   done
 }
 
@@ -196,14 +173,14 @@ function modify_target {
   fi
   echo "Modifying target ${TARGET} ..."
 
-  # Add modules, if requested
-  if [[ -n "${ADD-}" ]]; then
-    add_modules "${TARGET}"
-  fi
-
   # Remove modules, if requested
   if [[ -n "${REMOVE-}" ]]; then
     remove_modules "${TARGET}"
+  fi
+
+  # Add modules, if requested
+  if [[ -n "${ADD-}" ]]; then
+    add_modules "${TARGET}"
   fi
 }
 
