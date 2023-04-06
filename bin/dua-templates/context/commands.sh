@@ -8,6 +8,7 @@
 # April 4, 2023
 
 # Add yours, some convenient ones are provided below.
+# You can also source other files from sub-units included by this project.
 
 # Routine to convert an angle in degrees [-180° +180°] to radians [-PI +PI]
 function degrad {

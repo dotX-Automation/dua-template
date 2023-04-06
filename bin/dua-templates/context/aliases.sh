@@ -8,6 +8,7 @@
 # April 4, 2023
 
 # Add custom, general-purpose aliases here.
+# You can also source other files from sub-units included by this project.
 
 alias ls='ls --color=auto'
 alias ll='ls -la'
