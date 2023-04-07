@@ -84,27 +84,36 @@ function add_units {
   local TARGET
   TARGET="${1-}"
 
-  # If we need to add multiple units, clear the target first
-  if [[ "${#ADD_UNITS[@]}" -gt "1" ]]; then
-    clear_units "${TARGET}"
-  fi
+  rm unitstmp || true
 
-  # Get the lenght of the array
-  local -i LEN
-  LEN="${#ADD_UNITS[@]}"
-
-  # Add the specified units
-  #for UNIT in "${ADD_UNITS[@]}"; do
-  for ((i = LEN - 1; i >= 0; i--)); do
-    UNIT=${ADD_UNITS[i]}
+  # Add the specified units to a temporary file
+  for UNIT in "${ADD_UNITS[@]}"; do
     echo "Adding unit ${UNIT} ..."
     sed -n \
-      "/### ${UNIT} START ###/,/### ${UNIT} END ###/p" \
-      "src/${UNIT}/docker/container-${TARGET}/Dockerfile" |
-      sed -i \
-        '/^### IMAGE SETUP START ###$/r /dev/stdin' \
-        "docker/container-${TARGET}/Dockerfile"
+      "/^# ${UNIT} START #$/,/^# ${UNIT} END #$/p" \
+      "src/${UNIT}/docker/container-${TARGET}/Dockerfile" >> unitstmp
   done
+
+  # Rebuild the Dockerfile adding the new parts
+  if [[ "${#ADD_UNITS[@]}" -gt "1" ]]; then
+    # If more than one unit is added, Dockerfile must be rebuilt
+    echo "Rebuilding Dockerfile for target ${TARGET} ..."
+    clear_units "${TARGET}"
+    {
+      sed -n '1,/^# IMAGE SETUP START #$/p' "docker/container-${TARGET}/Dockerfile"
+      cat unitstmp
+      sed -n '/^# IMAGE SETUP END #$/,$p' "docker/container-${TARGET}/Dockerfile"
+    } > dockerfiletmp
+  else
+    # Copy the relevant portion of the Dockerfile
+    {
+      sed -n '/^# IMAGE SETUP END #$/q;p' "docker/container-${TARGET}/Dockerfile"
+      cat unitstmp
+      sed -n '/^# IMAGE SETUP END #$/,$p' "docker/container-${TARGET}/Dockerfile"
+    } > dockerfiletmp
+  fi
+  mv dockerfiletmp "docker/container-${TARGET}/Dockerfile"
+  rm unitstmp
 }
 
 # Function to remove units from a target.
@@ -116,7 +125,7 @@ function remove_units {
   # Remove the specified units
   for UNIT in "${REMOVE_UNITS[@]}"; do
     echo "Removing unit ${UNIT} ..."
-    sed -i "/^### ${UNIT} START ###$/,/^### ${UNIT} END ###$/d" "docker/container-${TARGET}/Dockerfile"
+    sed -i "/^# ${UNIT} START #$/,/^# ${UNIT} END #$/d" "docker/container-${TARGET}/Dockerfile"
   done
 }
 
@@ -126,13 +135,13 @@ function clear_units {
   local TARGET
   TARGET="${1-}"
 
-  # Remove all units
+  # Remove all units with a clever copy-paste
   echo "Removing all units from target ${TARGET} ..."
-  sed -i \
-    -e '/^### IMAGE SETUP START ###$/,/^### IMAGE SETUP END ###$/d' \
-    -e '/^### IMAGE SETUP START ###$/p' \
-    -e '/^### IMAGE SETUP END ###$/p' \
-    "docker/container-${TARGET}/Dockerfile"
+  {
+    sed -n '1,/^# IMAGE SETUP START #$/p' "docker/container-${TARGET}/Dockerfile"
+    sed -n '/^# IMAGE SETUP END #$/,$p' "docker/container-${TARGET}/Dockerfile"
+  } > dockerfiletmp
+  mv dockerfiletmp "docker/container-${TARGET}/Dockerfile"
 }
 
 # Function to create a new target.

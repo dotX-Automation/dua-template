@@ -12,8 +12,8 @@ ARG USER_UID=1000
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-### IMAGE SETUP START ###
-### IMAGE SETUP END ###
+# IMAGE SETUP START #
+# IMAGE SETUP END #
 
 # Create a user with Zsh as shell, hashed password, and add it to the sudoers
 # To generate the hashed password, run:
