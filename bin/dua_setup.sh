@@ -89,16 +89,25 @@ function add_units {
     rm unitstmp
   fi
   for UNIT in "${ADD_UNITS[@]}"; do
-    echo "Adding unit ${UNIT} ..."
-    sed -n \
-      "/^# ${UNIT} START #$/,/^# ${UNIT} END #$/p" \
-      "src/${UNIT}/docker/container-${TARGET}/Dockerfile" >> unitstmp
+    if grep -q "# ${UNIT} START #" "docker/container-${TARGET}/Dockerfile"; then
+      # If the unit is already present, just copy it to preserve local changes
+      echo "Copying unit ${UNIT} ..."
+      sed -n \
+        "/^# ${UNIT} START #$/,/^# ${UNIT} END #$/p" \
+        "docker/container-${TARGET}/Dockerfile" >> unitstmp
+    else
+      # If the unit is not present, copy it from the source
+      echo "Adding unit ${UNIT} ..."
+      sed -n \
+        "/^# ${UNIT} START #$/,/^# ${UNIT} END #$/p" \
+        "src/${UNIT}/docker/container-${TARGET}/Dockerfile" >> unitstmp
+    fi
   done
 
-  # Rebuild the Dockerfile adding the new parts
+  # Rebuild the target Dockerfile adding the new parts
   if [[ "${#ADD_UNITS[@]}" -gt "1" ]]; then
     # If more than one unit is added, clear the target first, then copy the new units
-    clear_units "${TARGET}"
+    clear_units "${TARGET}" "0"
     {
       sed -n '1,/^# IMAGE SETUP START #$/p' "docker/container-${TARGET}/Dockerfile"
       cat unitstmp
@@ -132,11 +141,14 @@ function remove_units {
 # Function to clear all units from a target.
 function clear_units {
   # Parse the arguments
-  local TARGET
+  local TARGET VERBOSE
   TARGET="${1-}"
+  VERBOSE="${2-1}"
 
   # Remove all units with a clever copy-paste
-  echo "Removing all units from target ${TARGET} ..."
+  if [[ "${VERBOSE}" == "1" ]]; then
+    echo "Removing all units from target ${TARGET} ..."
+  fi
   {
     sed -n '1,/^# IMAGE SETUP START #$/p' "docker/container-${TARGET}/Dockerfile"
     sed -n '/^# IMAGE SETUP END #$/,$p' "docker/container-${TARGET}/Dockerfile"
