@@ -10,7 +10,7 @@ version: "3.9"
 services:
   SERVICE:
     build:
-      context: .
+      context: ../
       network: host
       dockerfile: Dockerfile
       args:
@@ -33,16 +33,16 @@ services:
       ]
     volumes:
       - type: bind
-        source: ../../
+        source: ../../../
         target: /home/neo/workspace
-      - ./aliases.sh:/home/neo/.aliases.sh:rw
-      - ./bashrc:/home/neo/.bashrc:re
-      - ./colcon-defaults.yaml:/home/neo/.colcon/defaults.yaml:rw
-      - ./commands.sh:/home/neo/.commands.sh:rw
-      - ./p10k.zsh:/home/neo/.p10k.zsh:rw
-      - ./ros2.sh:/home/neo/.ros2.sh:rw
-      - ./zshrc:/home/neo/.zshrc:rw
-      - ./zsh_history:/home/neo/zsh_history
+      - ../aliases.sh:/home/neo/.aliases.sh:rw
+      - ../bashrc:/home/neo/.bashrc:re
+      - ../colcon-defaults.yaml:/home/neo/.colcon/defaults.yaml:rw
+      - ../commands.sh:/home/neo/.commands.sh:rw
+      - ../p10k.zsh:/home/neo/.p10k.zsh:rw
+      - ../ros2.sh:/home/neo/.ros2.sh:rw
+      - ../zshrc:/home/neo/.zshrc:rw
+      - ../zsh_history:/home/neo/zsh_history
       - ~/.ssh:/home/neo/.ssh
       - ~/.gitconfig:/home/neo/.gitconfig
       - ~/.Xauthority:/home/neo/.Xauthority:rw
@@ -50,3 +50,10 @@ services:
       - /sys:/sys
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [ gpu ]

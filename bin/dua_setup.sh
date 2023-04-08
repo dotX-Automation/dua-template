@@ -182,7 +182,7 @@ function create_target {
   echo "Creating target ${TARGET} (password hash: ${HPSW}) ..."
 
   # Create the folder corresponding to the requested target
-  mkdir "docker/container-${TARGET}"
+  mkdir -p "docker/container-${TARGET}/.devcontainer"
 
   # Copy standard files
   cp "bin/dua-templates/context/aliases.sh" "docker/container-${TARGET}/"
@@ -200,16 +200,16 @@ function create_target {
   cp "bin/dua-templates/context/gitignore-zsh_history" "docker/container-${TARGET}/zsh_history/.gitignore"
 
   # Copy and configure devcontainer.json
-  cp "bin/dua-templates/devcontainer.json.template" "docker/container-${TARGET}/.devcontainer.json"
-  sed -i "s/SERVICE/${SERVICE}/g" "docker/container-${TARGET}/.devcontainer.json"
+  cp "bin/dua-templates/devcontainer.json.template" "docker/container-${TARGET}/.devcontainer/devcontainer.json"
+  sed -i "s/SERVICE/${SERVICE}/g" "docker/container-${TARGET}/.devcontainer/devcontainer.json"
 
   # Copy and configure docker-compose.yml
   if [[ "${TARGET}" == "x86-cudev" ]]; then
-    cp "bin/dua-templates/docker-compose.yml.nvidia.template" "docker/container-${TARGET}/docker-compose.yml"
+    cp "bin/dua-templates/docker-compose.yaml.nvidia.template" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
   else
-    cp "bin/dua-templates/docker-compose.yml.template" "docker/container-${TARGET}/docker-compose.yml"
+    cp "bin/dua-templates/docker-compose.yaml.template" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
   fi
-  sed -i "s/SERVICE/${SERVICE}/g" "docker/container-${TARGET}/docker-compose.yml"
+  sed -i "s/SERVICE/${SERVICE}/g" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
 
   # Copy and configure Dockerfile, adding units if requested
   cp "bin/dua-templates/Dockerfile.template" "docker/container-${TARGET}/Dockerfile"
