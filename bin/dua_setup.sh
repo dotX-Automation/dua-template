@@ -18,8 +18,8 @@ function usage {
   echo >&2 "Usage:"
   echo >&2 "    dua_setup.sh create [-a UNIT1,UNIT2,...] NAME TARGET PASSWORD"
   echo >&2 "    dua_setup.sh modify [-a UNIT1,UNIT2,...] [-r UNIT1,UNIT2,...] TARGET"
-  echo >&2 "    dua_setup.sh delete TARGET"
   echo >&2 "    dua_setup.sh clear TARGET"
+  echo >&2 "    dua_setup.sh delete TARGET"
   echo >&2 "See the README for more info."
 }
 
