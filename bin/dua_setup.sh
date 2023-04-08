@@ -7,7 +7,7 @@
 #
 # April 5, 2023
 
-# shellcheck disable=SC1003,SC2207
+# shellcheck disable=SC2207
 
 set -o errexit
 set -o nounset
@@ -28,7 +28,7 @@ if [[ "${1-}" =~ ^-*h(elp)?$ ]]; then
   exit 1
 fi
 
-# Global variables
+# Global, program state variables
 declare -i CREATE
 declare -i MODIFY
 declare -i DELETE
@@ -40,7 +40,7 @@ declare -a REMOVE_UNITS
 
 # Function to check that this script is executed in the root directory of the current repo.
 function check_root {
-  if [[ ! -d "bin" ]]; then
+  if [[ ! -d "docker" ]]; then
     echo >&2 "ERROR: This script must be executed in the root directory of the current repo"
     return 1
   else
@@ -84,9 +84,10 @@ function add_units {
   local TARGET
   TARGET="${1-}"
 
-  rm unitstmp || true
-
   # Add the specified units to a temporary file
+  if [[ -f unitstmp ]]; then
+    rm unitstmp
+  fi
   for UNIT in "${ADD_UNITS[@]}"; do
     echo "Adding unit ${UNIT} ..."
     sed -n \
@@ -96,8 +97,7 @@ function add_units {
 
   # Rebuild the Dockerfile adding the new parts
   if [[ "${#ADD_UNITS[@]}" -gt "1" ]]; then
-    # If more than one unit is added, Dockerfile must be rebuilt
-    echo "Rebuilding Dockerfile for target ${TARGET} ..."
+    # If more than one unit is added, clear the target first, then copy the new units
     clear_units "${TARGET}"
     {
       sed -n '1,/^# IMAGE SETUP START #$/p' "docker/container-${TARGET}/Dockerfile"
@@ -105,7 +105,7 @@ function add_units {
       sed -n '/^# IMAGE SETUP END #$/,$p' "docker/container-${TARGET}/Dockerfile"
     } > dockerfiletmp
   else
-    # Copy the relevant portion of the Dockerfile
+    # Copy the new unit's portion in the Dockerfile
     {
       sed -n '/^# IMAGE SETUP END #$/q;p' "docker/container-${TARGET}/Dockerfile"
       cat unitstmp
@@ -382,3 +382,4 @@ elif [[ -n "${DELETE-}" ]]; then
 elif [[ -n "${CLEAR-}" ]]; then
   clear_target "${@}"
 fi
+echo "Remember to commit the changes ASAP!"
