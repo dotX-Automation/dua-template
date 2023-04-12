@@ -6,7 +6,51 @@ Project template for repositories based on the Distributed Unified Architecture.
 
 This repository contains a set of files that make up a structural template for robotics development projects. Once appropriately forked on GitHub, it can be configured as the starting point for a new project as hereby described.
 
-The main goal of this project is that of offering a common, shared work environment that minimizes the time and effort required to set up prototyping and experimenting of new solutions, as well as providing a common framework for teams that can be versatile enough to support any development workflow. It aims at achieving so by providing three main features: workspace organization for both development and deployment, hardware and operating system abstraction via Docker and middlewares like Data Distribution Services (DDS) and Robot Operating System 2 (ROS 2), modular structure for easy integration of multiple components into a single *macro-project* or control architecture, hence the name *Distributed Unified Architecture*.
+The main goal of this project is to offer a common, shared work environment that minimizes the time and effort required to set up prototyping and experimenting of new solutions, as well as to provide a common framework for teams that can be versatile enough to support any development workflow. It aims at achieving so by providing three main features: workspace organization for both development and deployment, hardware and operating system abstraction via Docker and middlewares like Data Distribution Services (DDS) and Robot Operating System 2 (ROS 2), modular structure for easy integration of multiple components into a single *macro-project* or control architecture, hence the name *Distributed Unified Architecture*.
+
+This project creates a common development environment making use of three tools:
+
+- Docker
+- Git
+- Visual Studio Code
+
+### Why Docker?
+
+Docker is a tool that allows to create and run containers, which are isolated environments that can be used to run software in a reproducible way, with no additional overhead. It is a very powerful tool that can be used to create and store reproducible environments for any software, and that can be used to run software in a way that is independent of the operating system and hardware it is running on. This is particularly useful for robotics, where the same software can be run on different machines, with different operating systems and hardware, and still work as expected, implying that one can develop code inside an environment that imitates or is even an extension of the one that will run on the target machine, including development tools.
+
+DUA ultimately allows a developer to build Docker images that include all the software required to run a project, starting from predefined environments that include common tools for robotics. Such environments are Docker images, denoted in the following as *base units*, that include:
+
+- The operating system: **Ubuntu 20.04/22.04 LTS**.
+- The Robot Operating System 2 robotics middleware: **ROS 2 Humble Hawksbill**.
+- **C/C++ toolchains and debuggers**.
+- A **Python 3** installation with basic packages.
+- The **[`OpenCV`](opencv.org) computer vision library**.
+- Additional development tools and libraries, depending on the platform at which the base unit is targeted.
+
+The quantity of development tools installed in every base unit depends on the target platform, and is meant to be as minimal as possible. The idea is that, once a base unit is built, it can be used as a starting point for other Docker images that include only the software required to run a specific project. This allows to create a Docker image that is as small as possible, and that can be easily shared and deployed on different machines.
+
+#### On the use of Docker in robotics
+
+Docker has been originally developed to provide *microservices*, *i.e.*, to package software in small, replicable environments that could be completely isolated from the rest of the system while experiencing little to no overhead. **This is evidently not the case for robotics: while you can still have single software modules packaged individually, such modules are often meant to access the hardware and communicate with each other, possibly accessing the network stack directly, which is not possible in a completely isolated environment.**
+
+So, to benefit from Docker in robotics and to fully support the tools listed in [Why Docker?](#why-docker) that come preinstalled in base units, some compromises must be made about Docker security features. In particular, as the template [`docker-compose.yaml`](bin/dua-templates/docker-compose.yaml.template) file testifies, by default
+
+- Containers run in *privileged mode*, which means that they can access all the capabilities of the host machine; this is particularly necessary for software modules that require access to the hardware, like cameras, sensors, and communication interfaces, and for debuggers to work properly.
+- Containers are allowed to access the host network stack, which means that they can access the network and communicate with other containers and the host machine; this is necessary for ROS 2 to work properly, and for DDS middlewares to work at all.
+- Containers are granted full access to the hardware, since `/dev` and `/sys` are mounted inside the container; this is necessary for software modules that require access to the hardware.
+- The internal user of the container is a member of the `sudo` group inside the container; however, it has a password, that must be specified when configuring the project as explained in [Creating a target](#creating-a-target) and that is only copied as `sha-512` salted hash in the `Dockerfile`, so its plain text is never stored anywhere.
+
+**Please note that it is the end user's responsibility to ensure that the Docker configuration files are not modified in a way that would compromise the security of the system, and that the internal user password is not lost.** If the password is lost, the end user can always change it by modifying the `Dockerfile` and rebuilding the image.
+
+If the end user requires a different configuration, they have full control over the Docker configuration files, and can modify them as they see fit.
+
+### Why Git?
+
+Git is a version control system that allows to keep track of changes to a set of files, and to share them with others. It is particularly useful for robotics, where it can be used to keep track of changes to source code, configuration files, and other files that are used in the development of a project. It is also useful to share code with other developers, and to keep track of the history of a project. Moreover, as explained in [Integrating other DUA-based projects](#integrating-other-dua-based-projects), Git features allow to easily integrate other projects into a single *macro-project*, to both resolve dependencies sharing code and to continue development in parallel, provided that the structure of both projects is compatible, which is exactly what this template is meant to provide.
+
+### Why Visual Studio Code?
+
+Visual Studio Code is a free, open-source, cross-platform IDE that can be used to develop software in many different languages. It is particularly useful for robotics, where it can be used to develop code in C/C++, Python, and other languages, and where it can be used to manage Git repositories and Docker containers. It is also very customizable, and can be extended with plugins that add support for many different languages and tools. As the contents of this repository and the following sections show, this template is meant to be used with Visual Studio Code, and it is configured to work with it out of the box, providing many useful features for robotics software development.
 
 ## Support and limitations
 
@@ -16,7 +60,7 @@ This work is developed on, and supposed to run on, Linux-based systems. It can w
 
 This template is one of three parallel projects that, together, form the DUA framework. The other two are:
 
-- [`dua-foundation`](https://github.com/IntelligentSystemsLabUTV/dua-foundation): `Dockerfiles` and other configuration files that are required to build the Docker images used by DUA projects, known as *base units*.
+- [`dua-foundation`](https://github.com/IntelligentSystemsLabUTV/dua-foundation): `Dockerfiles` and other configuration files that are required to build the Docker images used as base by DUA projects, known as *base units*.
 - [`dua-utils`](https://github.com/IntelligentSystemsLabUTV/dua-utils): A collection of libraries and other software packages that can be used in robotics projects, and that are well integrated in DUA-based projects.
 
 Finally, the directory tree is partially organized as a ROS 2 workspace that can be easily managed with Visual Studio Code, and the basic layout for this is defined in [`robmasocco/vscode_ros2_workspace`](https://github.com/robmasocco/vscode_ros2_workspace).
@@ -120,16 +164,54 @@ opens a shell in the container. They can be normally stopped, which is also what
 
 #### On units integration
 
-As per the contents of the generic [`Dockerfile.template`](bin/dua-templates/Dockerfile.template), the `Dockerfile` of a target can be modified to include additional build steps speficic to the project at hand. The section in which these commands must be added are marked as
+As per the contents of the generic [`Dockerfile.template`](bin/dua-templates/Dockerfile.template), the `Dockerfile` of a target can be modified to include additional build steps specific to the project, *i.e.*, unit at hand. Suppose that the new unit is called, *e.g.*, `test`. Given one of the possible targets for `test`, **the section of the target's `Dockerfile` in which the additional build steps must be added is marked as**
 
 ```dockerfile
 # IMAGE SETUP START #
 # IMAGE SETUP END #
 ```
 
+and may already contain additional build steps related to the units that are already integrated in the target, depending on how the setup was carried out and on the dependencies of the project. Then, **to ensure that the `dua_setup.sh` script can properly include the new unit into targets of other projects, wrap the build steps specific to `test` in the following lines**
+
+```dockerfile
+# test START #
+# test END #
+```
+
 The rest of the `Dockerfile` adds an interal user to the container, configures mount points for configuration files so that they can be modified in real time from both inside and outside a container, and so on. The `docker-compose.yaml` file is also meant to be modified to add additional configuration options, such as the ones that specify the hardware devices that must be made available to the container. By default, the whole hardware is mounted via `/dev` and `/sys`. **The network mode must be set to `host` to ensure that units running inside a container can communicate with the outside world.**
 
 To ensure that DUA units are properly integrated in a target when the [`dua_setup.sh`](bin/dua_setup.sh) script is invoked with the `-a` option, **they must be placed as subdirectories of the `src/` directory**. When an addition is carried out, contents of a unit's `Dockerfile` enclosed in the above lines is copied into the same section of the one of the target that is being configured. This allows one to add build steps specific to the project at hand, and to ensure that the unit is properly integrated in the target, achieving full modularity while automating the setup and integration process of a control architecture.
+
+Please note that these rules imply that **build steps specific to dependencies of a unit are not included when such unit is integrated in another target**. Suppose that units `dep1` and `dep2` are dependecies of `test`, and that you have set up a target using `dua_setup.sh` with the `-a` option to include them before writing the section relevant to `test`. After your additions, the `IMAGE SETUP` section of the corresponding `Dockerfile` will look, *e.g.*, like this:
+
+```dockerfile
+# IMAGE SETUP START #
+# dep1 START #
+RUN echo "dep1"
+# dep1 END #
+# dep2 START #
+RUN echo "dep2"
+# dep2 END #
+# test START #
+RUN echo "test"
+# test END #
+# IMAGE SETUP END #
+```
+
+Now suppose that you integrate the `test` unit in a target of another unit, named, *e.g.*, `test2`, as a dependency. **If you specify only `test` as a unit to integrate when running `dua_setup.sh` with the `-a` option, the `IMAGE SETUP` section of the `Dockerfile` of `test2` will look like this (after `test2`-specific additions):**
+
+```dockerfile
+# IMAGE SETUP START #
+# test START #
+RUN echo "test"
+# test END #
+# test2 START #
+RUN echo "test2"
+# test2 END #
+# IMAGE SETUP END #
+```
+
+**that is, the dependencies `dep1` and `dep2` of `test` will NOT be included.** This is because the `dua_setup.sh` script does not know which dependencies are already integrated in the target, and which are not, nor does it care, to ensure that the end user always has full control over the contents of the `Dockerfile` of a target and can always include the most up-to-date version of every unit, avoiding the risk of carrying over old code. **If you want to include the dependencies of `test` in the `Dockerfile` of `test2`, you must specify them explicitly when running `dua_setup.sh` with the `-a` option, in the correct order.**
 
 ### Modifying a target
 
