@@ -210,6 +210,8 @@ function create_target {
     cp "bin/dua-templates/docker-compose.yaml.template" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
   fi
   sed -i "s/SERVICE/${SERVICE}/g" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
+  sed -i "s/NAME/${NAME}/g" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
+  sed -i "s/TARGET/${TARGET}/g" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
 
   # Copy and configure Dockerfile, adding units if requested
   cp "bin/dua-templates/Dockerfile.template" "docker/container-${TARGET}/Dockerfile"
