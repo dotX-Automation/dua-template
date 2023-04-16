@@ -50,7 +50,7 @@ function check_root {
 
 # Check that mkpasswd is available
 if ! command -v mkpasswd &>/dev/null; then
-  echo >&2 "ERROR: mkpasswd not found"
+  echo >&2 "ERROR: mkpasswd not found, may be in the whois package"
   exit 1
 fi
 
@@ -70,7 +70,7 @@ function units_to_array {
 
 # Function to check that a target is valid.
 function check_target {
-  if [[ "${1-}" =~ ^(x86-base|x86-dev|x86-cudev|armv8-base|armv8-dev|jetson5c7)$ ]]; then
+  if [[ "${1-}" =~ ^(x86-base|x86-dev|x86-cudev|armv8-base|armv8-dev|jetson5c7|jetson4c5)$ ]]; then
     return 0
   else
     echo >&2 "ERROR: Invalid target: ${1-}"
@@ -204,7 +204,7 @@ function create_target {
   sed -i "s/SERVICE/${SERVICE}/g" "docker/container-${TARGET}/.devcontainer/devcontainer.json"
 
   # Copy and configure docker-compose.yml
-  if [[ "${TARGET}" == "x86-cudev" ]]; then
+  if [[ "${TARGET}" == "x86-cudev" ]] || [[ "${TARGET}" == "jetson4c5" ]]; then
     cp "bin/dua-templates/docker-compose.yaml.nvidia.template" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
   else
     cp "bin/dua-templates/docker-compose.yaml.template" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
