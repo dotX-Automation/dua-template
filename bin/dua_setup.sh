@@ -16,7 +16,7 @@ if [[ "${TRACE-0}" == "1" ]]; then set -o xtrace; fi
 
 function usage {
   echo >&2 "Usage:"
-  echo >&2 "    dua_setup.sh create [-a UNIT1,UNIT2,...] NAME TARGET PASSWORD"
+  echo >&2 "    dua_setup.sh create [-a UNIT1,UNIT2,...] NAME TARGET"
   echo >&2 "    dua_setup.sh modify [-a UNIT1,UNIT2,...] [-r UNIT1,UNIT2,...] TARGET"
   echo >&2 "    dua_setup.sh clear TARGET"
   echo >&2 "    dua_setup.sh delete TARGET"
@@ -162,11 +162,10 @@ function create_target {
   local NAME TARGET PASSWORD HPSW
   NAME="${1-}"
   TARGET="${2-}"
-  PASSWORD="${3-}"
   if ! check_target "${TARGET}"; then
     exit 1
   fi
-  if [[ -z "${NAME}" || -z "${PASSWORD}" ]]; then
+  if [[ -z "${NAME}" ]]; then
     echo >&2 "ERROR: Missing arguments"
     usage
     exit 1
@@ -175,7 +174,15 @@ function create_target {
     echo >&2 "ERROR: Target ${TARGET} already exists"
     exit 1
   fi
+
+  # Ask for a password
+  read -r -s -p "Enter password for internal user: " PASSWORD
+  if [[ -z "${PASSWORD}" ]]; then
+    echo >&2 "ERROR: Empty password"
+    exit 1
+  fi
   HPSW=$(mkpasswd -m sha-512 "${PASSWORD}" intelsyslab)
+
   SERVICE="${NAME}-${TARGET}"
   echo "Project name: ${NAME}"
   echo "Servcice name: ${SERVICE}"

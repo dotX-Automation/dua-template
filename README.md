@@ -110,7 +110,7 @@ The first maintenance tasks to perform when creating a new DUA-based project mus
 Then, the repository contents can be configured. For this, the [`dua_setup.sh`](bin/dua_setup.sh) script is provided. It can be invoked like this
 
 ```bash
-dua_setup.sh create [-a UNIT1,UNIT2,...] NAME TARGET PASSWORD
+dua_setup.sh create [-a UNIT1,UNIT2,...] NAME TARGET
 dua_setup.sh modify [-a UNIT1,UNIT2,...] [-r UNIT1,UNIT2,...] TARGET
 dua_setup.sh delete TARGET
 dua_setup.sh clear TARGET
@@ -133,14 +133,14 @@ and an explanation of all relevant commands follows in the next sections. Before
 The command
 
 ```bash
-dua_setup.sh create [-a UNIT1,UNIT2,...] NAME TARGET PASSWORD
+dua_setup.sh create [-a UNIT1,UNIT2,...] NAME TARGET
 ```
 
-creates a new target, *i.e.*, a Docker image, for a project. The `-a` option can be used to specify a list of units that will be integrated in the new target, and the `NAME` argument is the name of the project. The `TARGET` argument is the name of the target, and the `PASSWORD` argument is the password that will be used to access the container's root user.
+creates a new target, *i.e.*, a Docker image, for a project. The `-a` option can be used to specify a list of units that will be integrated in the new target, and the `NAME` argument is the name of the project.
 
-`TARGET` must be a valid target name, *i.e.*, one of the image tags in [`dua-foundation`](https://github.com/IntelligentSystemsLabUTV/dua-foundation).
+The `TARGET` argument is the name of the target. `TARGET` must be a valid target name, *i.e.*, one of the image tags in [`dua-foundation`](https://github.com/IntelligentSystemsLabUTV/dua-foundation).
 
-**A password is required for all projects since the container's internal user runs with elevated privileges and has full access to the host's network stack and hardware devices.**
+**A password is required for all projects since the container's internal user runs with elevated privileges and has full access to the host's network stack and hardware devices.** It will be asked for during the creation of the target, and will be stored in hashed form in the target's `Dockerfile`.
 
 `create` will create a new `container-TARGET` directory inside `docker/`, and will copy and configure all the template files stored in `bin/dua-templates`. These include `Dockerfile` and `docker-compose.yaml` files, as well as many shell configuration scripts and other configuration files that are used to build and run the image. Once copied, they can be modified to fully support the specific features of the project at hand. In particular:
 
