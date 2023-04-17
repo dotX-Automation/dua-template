@@ -23,6 +23,7 @@ services:
     user: neo
     network_mode: "host"
     privileged: true
+    ipc: host
     stdin_open: false
     tty: true
     working_dir: /home/neo/workspace
