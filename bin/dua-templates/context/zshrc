@@ -114,9 +114,9 @@ export EDITOR='nano'
 # users are encouraged to define aliases within the ZSH_CUSTOM folder.
 # For a full list of active aliases, run `alias`.
 unalias rm
-[[ ! -f ~/.aliases.sh ]] || source ~/.aliases.sh
-[[ ! -f ~/.commands.sh ]] || source ~/.commands.sh
-[[ ! -f ~/.ros2.sh ]] || (source ~/.ros2.sh && ros2init)
+source ~/.aliases.sh
+source ~/.commands.sh
+source ~/.ros2.sh && ros2init
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
