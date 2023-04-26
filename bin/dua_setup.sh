@@ -7,7 +7,7 @@
 #
 # April 5, 2023
 
-# shellcheck disable=SC2207
+# shellcheck disable=SC2207,SC2016
 
 set -o errexit
 set -o nounset
@@ -217,7 +217,7 @@ function create_target {
   fi
   if [[ "${NO_MKPASSWD-0}" == "1" ]]; then
     # Use Python 3 with passlib
-    HPSW=$(python3 -c "from passlib.hash import sha512_crypt; print(sha512_crypt.hash('${PASSWORD}', salt=intelsyslab, rounds=5000))")
+    HPSW=$(python3 -c "from passlib.hash import sha512_crypt; print(sha512_crypt.hash('${PASSWORD}', salt='intelsyslab', rounds=5000))")
   else
     HPSW=$(mkpasswd -m sha-512 "${PASSWORD}" intelsyslab)
   fi
