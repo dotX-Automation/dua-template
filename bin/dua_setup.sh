@@ -52,10 +52,14 @@ function check_root {
 # Check that mkpasswd is available
 if ! command -v mkpasswd &>/dev/null; then
   NO_MKPASSWD=1
+  echo "WARNING: mkpasswd is not available (try whois package?), using Python 3 passlib module instead"
 
-  # Check that python3 with the crypt module is available
-  if ! python3 -c 'import crypt' &>/dev/null; then
-    echo >&2 "ERROR: no mkpasswd (found usually in the whois package) or Python 3 with the crypt module found"
+  # Check that python3 with the passlib module is available
+  if ! command -v python3 &>/dev/null; then
+    echo >&2 "ERROR: mkpasswd is not available and Python 3 is not installed"
+    exit 1
+  elif ! python3 -c "import passlib" &>/dev/null; then
+    echo >&2 "ERROR: mkpasswd is not available and Python 3 passlib module is not installed"
     exit 1
   fi
 fi
@@ -188,7 +192,8 @@ function create_target {
     exit 1
   fi
   if [[ "${NO_MKPASSWD-0}" == "1" ]]; then
-    HPSW=$(python3 -c "import crypt; print(crypt.crypt('${PASSWORD}', '\$6\$intelsyslab'))")
+    # Use Python 3 with passlib
+    HPSW=$(python3 -c "from passlib.hash import sha512_crypt; print(sha512_crypt.hash('${PASSWORD}', salt=intelsyslab, rounds=5000))")
   else
     HPSW=$(mkpasswd -m sha-512 "${PASSWORD}" intelsyslab)
   fi
