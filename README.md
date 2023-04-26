@@ -8,11 +8,13 @@ This repository contains a set of files that make up a structural template for r
 
 The main goal of this project is to offer a common, shared work environment that minimizes the time and effort required to set up prototyping and experimenting of new solutions, as well as to provide a common framework for teams that can be versatile enough to support any development workflow. It aims at achieving so by providing three main features: workspace organization for both development and deployment, hardware and operating system abstraction via Docker and middlewares like Data Distribution Services (DDS) and Robot Operating System 2 (ROS 2), modular structure for easy integration of multiple components into a single *macro-project* or control architecture, hence the name *Distributed Unified Architecture*.
 
-This project creates a common development environment making use of three tools:
+This project creates a common development environment making use of three tools, which are also the main dependencies:
 
 - Docker
 - Git
 - Visual Studio Code
+
+**Please read the rest of this document carefully to assess whether DUA is the right tool for your project, and to get all the information required to set up a new project based on it.**
 
 ### Why Docker?
 
@@ -55,6 +57,76 @@ Visual Studio Code is a free, open-source, cross-platform IDE that can be used t
 ## Support and limitations
 
 This work is developed on, and supposed to run on, Linux-based systems. It can work, and has been independently tested, on different machines running Windows or macOS, although not all features might be available due to limitations of the Docker engine on those platforms.
+
+The officially supported platforms are:
+
+- [x] Linux
+- [x] Windows 10
+- [x] Windows 11
+- [x] macOS Ventura, on both Intel and Apple Silicon
+
+Suggestions and improvements are welcome, and can be submitted as issues or pull requests.
+
+### General dependencies
+
+The following tools are required to set up and run a DUA project on all supported platforms:
+
+- Git
+- Docker
+- Visual Studio Code
+- One of the following two tools to generate hashed passwords:
+  - `mkpasswd`, usually found in the `whois` package on Ubuntu.
+  - The `passlib` Python package, which can be installed with `pip install passlib`.
+- A working installation of [`GNU sed`](https://www.gnu.org/software/sed/), which is usually the default on Linux systems, but not on macOS where it can be installed with `brew install gnu-sed`.
+
+### Linux support
+
+Linux is the officially supported platform, and the one on which this template is developed. It is also the platform on which the Docker Engine is natively supported, and on which it is possible to run Docker containers with full hardware access and network stack access. This means that all features are available on Linux, and that the template is fully supported on Linux.
+
+### Windows support
+
+Windows is supported by the three main dependencies of this project, namely Git, Docker, and Visual Studio Code. However, to run DUA containers properly, the following dependencies are also required:
+
+- [Windows Subsystem for Linux 2](https://docs.microsoft.com/en-us/windows/wsl/install), or WSL 2, which is a compatibility layer for running Linux binary executables natively on Windows 10 and Windows 11.
+- [Docker Desktop](https://www.docker.com/products/docker-desktop), which is a tool that allows to run Docker containers on Windows and manage images.
+
+To run a DUA container, follow the steps below:
+
+1. Open Docker Desktop.
+2. Open Visual Studio Code and connect the window to WSL 2.
+3. Open a DUA project as explained below.
+
+The following limitations apply:
+
+- **Hardware access**: Docker containers running on Windows cannot access the hardware directly. This means that, while it is possible to run ROS 2 nodes inside a container, they will not be able to access the hardware connected to the host. This is a limitation of the Docker Engine on Windows, and it is not possible to overcome it.
+- **Network stack access**: Docker containers running on Windows cannot access the network stack directly, relying instead on a virtualized one. This means that, while it is possible to run ROS 2 nodes inside a container, they cannot communicate with other nodes running on machines connected to the same network as the host. This is a limitation of the Docker Engine on Windows, and it is not possible to overcome it.
+
+### macOS support
+
+macOS is supported by the three main dependencies of this project, namely Git, Docker, and Visual Studio Code. However, to run DUA containers properly, the following dependencies are also required:
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop), which is a tool that allows to run Docker containers on macOS and manage images.
+- [XQuartz](https://www.xquartz.org/), which is an open-source X11 server for macOS, necessary to run GUI-based applications inside Docker containers; it can be installed with `brew install --cask xquartz`, and after the installation is complete you should also run `defaults write org.xquartz.X11 enable_iglx -bool true` in the terminal to ensure that some OpenGL applications can run.
+
+The only supported targets on macOS are currently:
+
+- [x] `x86-dev` for Intel Macs.
+- [x] `arm64-dev` for Apple Silicon Macs.
+
+To run a DUA container, follow the steps below:
+
+1. Open Docker Desktop.
+2. Open XQuartz and run `xhost + 127.0.0.1` in the terminal.
+3. Open the project in Visual Studio Code as explained below.
+
+The following limitations apply on both Intel and Apple Silicon Macs:
+
+- **Hardware access**: Docker containers running on macOS cannot access the hardware directly. This means that, while it is possible to run ROS 2 nodes inside a container, they will not be able to access the hardware connected to the host. This is a limitation of the Docker Engine on macOS, and it is not possible to overcome it.
+- **Network stack access**: Docker containers running on macOS cannot access the network stack directly, relying instead on a virtualized one. This means that, while it is possible to run ROS 2 nodes inside a container, they cannot communicate with other nodes running on machines connected to the same network as the host. This is a limitation of the Docker Engine on macOS, and it is not possible to overcome it.
+
+The following limitations apply to Apple Silicon Macs only:
+
+- **3D hardware acceleration**: The Docker Engine cannot access the graphics card properly, meaning that either the drivers available in the container are not appropriate or the performance is extremely poor. This implies that tools like Gazebo and RViz will not work. This is a limitation of the Docker Engine on Apple Silicon Macs, and it is not possible to overcome it.
 
 ## Sibling repositories
 

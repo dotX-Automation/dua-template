@@ -37,6 +37,7 @@ declare -i ADD
 declare -i REMOVE
 declare -i NO_MKPASSWD
 declare -i NO_GNU
+declare -i MACOS
 declare -a ADD_UNITS
 declare -a REMOVE_UNITS
 
@@ -56,6 +57,7 @@ if [[ "$OS_NAME" == "Linux" ]]; then
   NO_GNU=0
 elif [[ "$OS_NAME" == "Darwin" ]]; then
   NO_GNU=1
+  MACOS=1
 else
   echo >&2 "ERROR: Unsupported operating system"
   exit 1
@@ -252,6 +254,8 @@ function create_target {
   # Copy and configure docker-compose.yml
   if [[ "${TARGET}" == "x86-cudev" ]] || [[ "${TARGET}" == "jetson4c5" ]]; then
     cp "bin/dua-templates/docker-compose.yaml.nvidia.template" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
+  elif [[ "${TARGET}" == "armv8-dev" ]] && [[ "${MACOS-0}" == "1" ]]; then
+    cp "bin/dua-templates/docker-compose.yaml.macos.template" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
   else
     cp "bin/dua-templates/docker-compose.yaml.template" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
   fi
@@ -260,7 +264,11 @@ function create_target {
   $SED -i "s/TARGET/${TARGET}/g" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
 
   # Copy and configure Dockerfile, adding units if requested
-  cp "bin/dua-templates/Dockerfile.template" "docker/container-${TARGET}/Dockerfile"
+  if [[ "${TARGET}" == "armv8-dev" ]] && [[ "${MACOS-0}" == "1" ]]; then
+    cp "bin/dua-templates/Dockerfile.macos.template" "docker/container-${TARGET}/Dockerfile"
+  else
+    cp "bin/dua-templates/Dockerfile.template" "docker/container-${TARGET}/Dockerfile"
+  fi
   $SED -i "s/TARGET/${TARGET}/g" "docker/container-${TARGET}/Dockerfile"
   $SED -i "s/HPSW/${HPSW//\//\\/}/g" "docker/container-${TARGET}/Dockerfile"
   if [[ -n "${ADD-}" ]]; then
