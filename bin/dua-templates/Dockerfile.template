@@ -17,7 +17,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Create a user with Zsh as shell, hashed password, and add it to the sudoers
 # To generate the hashed password, run:
-#   mkpasswd -m sha-512 -S PASSWORD intelsyslab
+#   mkpasswd -m sha-512 PASSWORD intelsyslab
 RUN useradd -r -m -s /usr/bin/zsh -u ${USER_UID} -G adm,dialout,internal,plugdev,sudo,tty,video -p 'HPSW' neo
 ENV HOME=/home/neo
 
