@@ -106,7 +106,7 @@ function units_to_array {
 
 # Function to check that a target is valid.
 function check_target {
-  if [[ "${1-}" =~ ^(x86-base|x86-dev|x86-cudev|armv8-base|armv8-dev|jetson5c7|jetson4c5)$ ]]; then
+  if [[ "${1-}" =~ ^(x86-base|x86-dev|x86-cudev|armv8-base|armv8-dev|jetson5c7|jetson4c5|jetson4c6)$ ]]; then
     return 0
   else
     echo >&2 "ERROR: Invalid target: ${1-}"
@@ -252,7 +252,7 @@ function create_target {
   $SED -i "s/SERVICE/${SERVICE}/g" "docker/container-${TARGET}/.devcontainer/devcontainer.json"
 
   # Copy and configure docker-compose.yml
-  if [[ "${TARGET}" == "x86-cudev" ]] || [[ "${TARGET}" == "jetson4c5" ]]; then
+  if [[ "${TARGET}" == "x86-cudev" ]] || [[ "${TARGET}" == "jetson4c5" ]] || [[ "${TARGET}" == "jetson4c6" ]]; then
     cp "bin/dua-templates/docker-compose.yaml.nvidia.template" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
   elif [[ "${TARGET}" == "armv8-dev" ]] && [[ "${MACOS-0}" == "1" ]]; then
     cp "bin/dua-templates/docker-compose.yaml.macos.template" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
