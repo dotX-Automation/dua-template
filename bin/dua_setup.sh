@@ -36,6 +36,7 @@ declare -i CLEAR
 declare -i ADD
 declare -i REMOVE
 declare -i NO_MKPASSWD
+declare -i NO_GNU
 declare -a ADD_UNITS
 declare -a REMOVE_UNITS
 
@@ -48,6 +49,17 @@ function check_root {
     return 0
   fi
 }
+
+# Check if we're running on a supported OS
+OS_NAME="$(uname -s)"
+if [[ "$OS_NAME" == "Linux" ]]; then
+  NO_GNU=0
+elif [[ "$OS_NAME" == "Darwin" ]]; then
+  NO_GNU=1
+else
+  echo >&2 "ERROR: Unsupported operating system"
+  exit 1
+fi
 
 # Check that mkpasswd is available
 if ! command -v mkpasswd &>/dev/null; then
@@ -62,6 +74,18 @@ if ! command -v mkpasswd &>/dev/null; then
     echo >&2 "ERROR: mkpasswd is not available and Python 3 passlib module is not installed"
     exit 1
   fi
+fi
+
+# If running on Mac OS, check that gnu-sed is available and configure it as our sed
+if [[ "$NO_GNU" == "1" ]]; then
+  if ! command -v gsed &>/dev/null; then
+    echo >&2 "ERROR: gnu-sed is not available"
+    exit 1
+  else
+    SED="gsed"
+  fi
+else
+  SED="sed"
 fi
 
 # Function to convert a comma-separated list of units to an array and return it.
@@ -102,13 +126,13 @@ function add_units {
     if grep -q "# ${UNIT} START #" "docker/container-${TARGET}/Dockerfile"; then
       # If the unit is already present, just copy it to preserve local changes
       echo "Copying unit ${UNIT} ..."
-      sed -n \
+      $SED -n \
         "/^# ${UNIT} START #$/,/^# ${UNIT} END #$/p" \
         "docker/container-${TARGET}/Dockerfile" >> unitstmp
     else
       # If the unit is not present, copy it from the source
       echo "Adding unit ${UNIT} ..."
-      sed -n \
+      $SED -n \
         "/^# ${UNIT} START #$/,/^# ${UNIT} END #$/p" \
         "src/${UNIT}/docker/container-${TARGET}/Dockerfile" >> unitstmp
     fi
@@ -119,16 +143,16 @@ function add_units {
     # If more than one unit is added, clear the target first, then copy the new units
     clear_units "${TARGET}" "0"
     {
-      sed -n '1,/^# IMAGE SETUP START #$/p' "docker/container-${TARGET}/Dockerfile"
+      $SED -n '1,/^# IMAGE SETUP START #$/p' "docker/container-${TARGET}/Dockerfile"
       cat unitstmp
-      sed -n '/^# IMAGE SETUP END #$/,$p' "docker/container-${TARGET}/Dockerfile"
+      $SED -n '/^# IMAGE SETUP END #$/,$p' "docker/container-${TARGET}/Dockerfile"
     } > dockerfiletmp
   else
     # Copy the new unit's portion in the Dockerfile
     {
-      sed -n '/^# IMAGE SETUP END #$/q;p' "docker/container-${TARGET}/Dockerfile"
+      $SED -n '/^# IMAGE SETUP END #$/q;p' "docker/container-${TARGET}/Dockerfile"
       cat unitstmp
-      sed -n '/^# IMAGE SETUP END #$/,$p' "docker/container-${TARGET}/Dockerfile"
+      $SED -n '/^# IMAGE SETUP END #$/,$p' "docker/container-${TARGET}/Dockerfile"
     } > dockerfiletmp
   fi
   mv dockerfiletmp "docker/container-${TARGET}/Dockerfile"
@@ -144,7 +168,7 @@ function remove_units {
   # Remove the specified units
   for UNIT in "${REMOVE_UNITS[@]}"; do
     echo "Removing unit ${UNIT} ..."
-    sed -i "/^# ${UNIT} START #$/,/^# ${UNIT} END #$/d" "docker/container-${TARGET}/Dockerfile"
+    $SED -i "/^# ${UNIT} START #$/,/^# ${UNIT} END #$/d" "docker/container-${TARGET}/Dockerfile"
   done
 }
 
@@ -160,8 +184,8 @@ function clear_units {
     echo "Removing all units from target ${TARGET} ..."
   fi
   {
-    sed -n '1,/^# IMAGE SETUP START #$/p' "docker/container-${TARGET}/Dockerfile"
-    sed -n '/^# IMAGE SETUP END #$/,$p' "docker/container-${TARGET}/Dockerfile"
+    $SED -n '1,/^# IMAGE SETUP START #$/p' "docker/container-${TARGET}/Dockerfile"
+    $SED -n '/^# IMAGE SETUP END #$/,$p' "docker/container-${TARGET}/Dockerfile"
   } > dockerfiletmp
   mv dockerfiletmp "docker/container-${TARGET}/Dockerfile"
 }
@@ -223,7 +247,7 @@ function create_target {
 
   # Copy and configure devcontainer.json
   cp "bin/dua-templates/devcontainer.json.template" "docker/container-${TARGET}/.devcontainer/devcontainer.json"
-  sed -i "s/SERVICE/${SERVICE}/g" "docker/container-${TARGET}/.devcontainer/devcontainer.json"
+  $SED -i "s/SERVICE/${SERVICE}/g" "docker/container-${TARGET}/.devcontainer/devcontainer.json"
 
   # Copy and configure docker-compose.yml
   if [[ "${TARGET}" == "x86-cudev" ]] || [[ "${TARGET}" == "jetson4c5" ]]; then
@@ -231,14 +255,14 @@ function create_target {
   else
     cp "bin/dua-templates/docker-compose.yaml.template" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
   fi
-  sed -i "s/SERVICE/${SERVICE}/g" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
-  sed -i "s/NAME/${NAME}/g" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
-  sed -i "s/TARGET/${TARGET}/g" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
+  $SED -i "s/SERVICE/${SERVICE}/g" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
+  $SED -i "s/NAME/${NAME}/g" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
+  $SED -i "s/TARGET/${TARGET}/g" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
 
   # Copy and configure Dockerfile, adding units if requested
   cp "bin/dua-templates/Dockerfile.template" "docker/container-${TARGET}/Dockerfile"
-  sed -i "s/TARGET/${TARGET}/g" "docker/container-${TARGET}/Dockerfile"
-  sed -i "s/HPSW/${HPSW//\//\\/}/g" "docker/container-${TARGET}/Dockerfile"
+  $SED -i "s/TARGET/${TARGET}/g" "docker/container-${TARGET}/Dockerfile"
+  $SED -i "s/HPSW/${HPSW//\//\\/}/g" "docker/container-${TARGET}/Dockerfile"
   if [[ -n "${ADD-}" ]]; then
     add_units "${TARGET}"
   fi
