@@ -35,6 +35,7 @@ declare -i DELETE
 declare -i CLEAR
 declare -i ADD
 declare -i REMOVE
+declare -i NO_MKPASSWD
 declare -a ADD_UNITS
 declare -a REMOVE_UNITS
 
@@ -50,8 +51,13 @@ function check_root {
 
 # Check that mkpasswd is available
 if ! command -v mkpasswd &>/dev/null; then
-  echo >&2 "ERROR: mkpasswd not found, may be in the whois package"
-  exit 1
+  NO_MKPASSWD=1
+
+  # Check that python3 with the crypt module is available
+  if ! python3 -c 'import crypt' &>/dev/null; then
+    echo >&2 "ERROR: no mkpasswd (found usually in the whois package) or Python 3 with the crypt module found"
+    exit 1
+  fi
 fi
 
 # Function to convert a comma-separated list of units to an array and return it.
@@ -181,7 +187,11 @@ function create_target {
     echo >&2 "ERROR: Empty password"
     exit 1
   fi
-  HPSW=$(mkpasswd -m sha-512 "${PASSWORD}" intelsyslab)
+  if [[ "${NO_MKPASSWD-0}" == "1" ]]; then
+    HPSW=$(python3 -c "import crypt; print(crypt.crypt('${PASSWORD}', '\$6\$intelsyslab'))")
+  else
+    HPSW=$(mkpasswd -m sha-512 "${PASSWORD}" intelsyslab)
+  fi
 
   SERVICE="${NAME}-${TARGET}"
   echo "Project name: ${NAME}"
