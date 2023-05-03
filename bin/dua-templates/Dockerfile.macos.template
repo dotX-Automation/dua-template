@@ -57,6 +57,10 @@ RUN git clone --single-branch --branch 'master' --depth 1 https://github.com/zsh
 COPY --chown=neo:neo ./p10k.zsh ./.p10k.zsh
 COPY --chown=neo:neo ./zshrc ./.zshrc
 
+# Configure OpenGL
+# This happens to fix some but not all problems on macOS with 3D acceleration
+ENV LIBGL_ALWAYS_INDIRECT=1
+
 ENV DEBIAN_FRONTEND=dialog
 
 # Add image information

@@ -30,11 +30,15 @@ ros2init() {
 
   # Source additional stuff for colcon argcomplete
   source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.zsh
-  eval "$(register-python-argcomplete3 ros2)"
 
   # Source additional DUA stuff
   if [[ -f /opt/ros/dua-utils/install/setup.zsh ]]; then
     source /opt/ros/dua-utils/install/setup.zsh
+  fi
+
+  # Source workspace if present
+  if [[ -f /home/neo/workspace/install/local_setup.zsh ]]; then
+    source /home/neo/workspace/install/local_setup.zsh
   fi
 }
 
