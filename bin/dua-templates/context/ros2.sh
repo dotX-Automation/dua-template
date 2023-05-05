@@ -31,6 +31,14 @@ ros2init() {
   # Source additional stuff for colcon argcomplete
   source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.zsh
 
+  # Source Ignition Gazebo stuff
+  if [[ -f /opt/gazebo/fortress/install/setup.zsh ]]; then
+    source /opt/gazebo/fortress/install/setup.zsh
+  fi
+  if [[ -f /opt/ros/ros_gz/install/local_setup.zsh ]]; then
+    source /opt/ros/ros_gz/install/local_setup.zsh
+  fi
+
   # Source additional DUA stuff
   if [[ -f /opt/ros/dua-utils/install/setup.zsh ]]; then
     source /opt/ros/dua-utils/install/setup.zsh
