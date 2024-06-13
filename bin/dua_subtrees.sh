@@ -1,11 +1,24 @@
 #!/usr/bin/env bash
 
-# Subtrees management script for DUA.
+# DUA subtrees management script.
 #
-# Roberto Masocco <robmasocco@gmail.com>
-# Intelligent Systems Lab <isl.torvergata@gmail.com>
+# Roberto Masocco <r.masocco@dotxautomation.com>
 #
-# April 4, 2023
+# June 13, 2024
+
+# Copyright 2024 dotX Automation s.r.l.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 set -o errexit
 set -o nounset
@@ -15,7 +28,7 @@ if [[ "${TRACE-0}" == "1" ]]; then set -o xtrace; fi
 function usage {
   echo >&2 "Usage:"
   echo >&2 "    dua_subtrees.sh [--add|--remove|--pull|--push|--remote-add|--remote-remove] ARGS"
-  echo >&2 "See the README for more info."
+  echo >&2 "See README.md for more info."
 }
 
 if [[ "${1-}" =~ ^-*h(elp)?$ ]]; then

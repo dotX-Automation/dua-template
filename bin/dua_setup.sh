@@ -2,10 +2,23 @@
 
 # Setup script for DUA repositories and projects.
 #
-# Roberto Masocco <robmasocco@gmail.com>
-# Intelligent Systems Lab <isl.torvergata@gmail.com>
+# Roberto Masocco <r.masocco@dotxautomation.com>
 #
-# April 5, 2023
+# June 13, 2024
+
+# Copyright 2024 dotX Automation s.r.l.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 # shellcheck disable=SC2207,SC2016
 
@@ -20,7 +33,7 @@ function usage {
   echo >&2 "    dua_setup.sh modify [-a UNIT1,UNIT2,...] [-r UNIT1,UNIT2,...] TARGET"
   echo >&2 "    dua_setup.sh clear TARGET"
   echo >&2 "    dua_setup.sh delete TARGET"
-  echo >&2 "See the README for more info."
+  echo >&2 "See README.md for more info."
 }
 
 if [[ "${1-}" =~ ^-*h(elp)?$ ]]; then
@@ -219,14 +232,14 @@ function create_target {
   fi
   if [[ "${NO_MKPASSWD-0}" == "1" ]]; then
     # Use Python 3 with passlib
-    HPSW=$(python3 -c "from passlib.hash import sha512_crypt; print(sha512_crypt.hash('${PASSWORD}', salt='intelsyslab', rounds=5000))")
+    HPSW=$(python3 -c "from passlib.hash import sha512_crypt; print(sha512_crypt.hash('${PASSWORD}', salt='duatemplate', rounds=5000))")
   else
-    HPSW=$(mkpasswd -m sha-512 "${PASSWORD}" intelsyslab)
+    HPSW=$(mkpasswd -m sha-512 "${PASSWORD}" duatemplate)
   fi
 
   SERVICE="${NAME}-${TARGET}"
   echo "Project name: ${NAME}"
-  echo "Servcice name: ${SERVICE}"
+  echo "Service name: ${SERVICE}"
   echo "Creating target ${TARGET} (password hash: ${HPSW}) ..."
 
   # Create the folder corresponding to the requested target
