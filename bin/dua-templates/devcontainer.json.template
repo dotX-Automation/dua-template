@@ -17,6 +17,7 @@
         "vscode-icons-team.vscode-icons",
         "github.copilot",
         "ms-python.python",
+        "ms-python.autopep8",
         "njpwerner.autodocstring",
         "ms-vscode.cpptools",
         "ms-vscode.cmake-tools",
