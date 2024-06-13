@@ -37,7 +37,8 @@
         "eamodio.gitlens",
         "donjayamanne.githistory",
         "zachflower.uncrustify",
-        "shardulm94.trailing-spaces"
+        "shardulm94.trailing-spaces",
+        "mrmlnc.vscode-json5"
       ],
       "settings": {
         // Set Zsh as the default shell
