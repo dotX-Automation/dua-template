@@ -347,10 +347,14 @@ If you have any questions or suggestions, please open an issue or contact us her
 
 ---
 
-## License
+## Copyright and License
 
-This work is licensed under the GNU General Public License v3.0. See the [`LICENSE`](LICENSE) file for details.
+Copyright 2024 dotX Automation s.r.l.
 
-## Copyright
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
 
-Copyright (c) 2023, Intelligent Systems Lab, University of Rome Tor Vergata
+You may obtain a copy of the License at <http://www.apache.org/licenses/LICENSE-2.0>.
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+
+See the License for the specific language governing permissions and limitations under the License.
