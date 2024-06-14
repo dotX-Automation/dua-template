@@ -70,5 +70,8 @@ ros2init() {
   fi
 }
 
+# Alias for colcon build command with maximum output
+alias cbuild='colcon build --event-handlers console_direct+ --symlink-install'
+
 # Alias for Gazebo Classic that includes environment variables for HiDPI
 alias gazebo='QT_AUTO_SCREEN_SCALE_FACTOR=0 QT_SCREEN_SCALE_FACTORS=[1.0] /usr/bin/gazebo'
