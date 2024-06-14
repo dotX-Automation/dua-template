@@ -144,6 +144,10 @@ Finally, the directory tree is partially organized as a ROS 2 workspace that can
 
 The template is organized as follows, as can be inferred following the directory tree starting from this file.
 
+### `.github`
+
+Contains workflows and other GitHub-related things.
+
 ### `.vscode`
 
 Contains a bunch of configuration files for Visual Studio Code, which is the recommended IDE for DUA projects. They can be modified and new ones can be added. They are meant to configure IDE behavior once it is opened inside a DUA container, and are not meant to store user-specific configurations but rather to be as generic as possible.
@@ -358,6 +362,26 @@ Even if subtrees require very few commands to be managed, there is still room fo
 
 - **If a project that has submodules is included as a subtree**, **submodules will not be cloned since they are managed externally from the Git source tree**. This means that the subtree's `.gitmodules` file must be copied to the root of the parent project, its paths and other settings appropriately modified, and only then submodule commands will work. **In case you plan on recursively including projects in more than one level, submodules are definitely the best choice.**
 - **If a project that has subtrees is included as a submodule**, everything should work normally since the history of the submodule will contain the history of its subtree and appear as a single history.
+
+## Updating the template
+
+DUA is an active projects, and updates are performed regularly. These mainly concern the base units, but template updates are not uncommon.
+
+Since `dua-template` is the core of every DUA project, and also to ensure that every project can be easily synchronized with the latest layout of the base units, a [template update workflow](.github/workflows/sync-dua-template.yaml) is provided.
+
+If enabled, it runs on every push to the `master` branch, every night at 00:01, and can also be run manually.
+
+In case your default branch is not `master`, you must modify the workflow file accordingly.
+
+In case template updates are found, the workflow will:
+
+- create a new `chore/*` branch from the `master` branch;
+- update template files in the branch;
+- create a pull request from the `chore/*` branch to the `master` branch.
+
+The workflow can run again even if the pull request is not yet merged: if new updates are found, they will be committed to the same branch, and the pull request will be updated.
+
+**The workflow will not modify files that belong to already configured containers.** This is intended to avoid conflicts with the user's work, and to ensure that the user has full control over the contents of the `Dockerfile`, `docker-compose.yaml`, and other files of their targets. This is also why a pull request is opened every time: it is also meant to allow the user to review the changes and modify their targets as they see fit.
 
 ## Feedback
 
