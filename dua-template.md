@@ -135,8 +135,8 @@ The following limitations apply to Apple Silicon Macs only:
 
 This template is one of three parallel projects that, together, form the DUA framework. The other two are:
 
-- [`dua-foundation`](https://github.com/IntelligentSystemsLabUTV/dua-foundation): `Dockerfiles` and other configuration files that are required to build the Docker images used as base by DUA projects, known as *base units*.
-- [`dua-utils`](https://github.com/IntelligentSystemsLabUTV/dua-utils): A collection of libraries and other software packages that can be used in robotics projects, and that are well integrated in DUA-based projects.
+- [`dua-foundation`](https://github.com/dotX-Automation/dua-foundation): `Dockerfiles` and other configuration files that are required to build the Docker images used as base by DUA projects, known as *base units*.
+- [`dua-utils`](https://github.com/dotX-Automation/dua-utils): A collection of libraries and other software packages that can be used in robotics projects, and that are well integrated in DUA-based projects.
 
 Finally, the directory tree is partially organized as a ROS 2 workspace that can be easily managed with Visual Studio Code, and the basic layout for this is defined in [`robmasocco/vscode_ros2_workspace`](https://github.com/robmasocco/vscode_ros2_workspace).
 
@@ -199,7 +199,7 @@ and an explanation of all relevant commands follows in the next sections. Before
 
 - **Project**: indicates a single Git repository, independently of its role or purpose.
 - **Unit**: indicates a software package, library, or collection thereof, that is developed as a DUA-based project; this name implies that while it is self-sufficient, can be executed inside its own container in parallel to other ones and share data with them, it can also be integrated as a sub-project into a larger one to form a control architecture.
-- **Target**: indicates a single Docker image that is used in a project, and that is built from a single `Dockerfile` and `docker-compose.yaml` pair plus many other configuration files; a target can be used to run a single unit, or multiple ones, or even a whole control architecture; the name resembles the meaning of the term *target* in the context of a `Makefile`, and is used to refer to the same concept in this context: each unit or architecture can have multiple targets, *i.e.*, Docker images, each one supporting a different hardware platform, System on Chip (SoC), and so on. The software that makes up a project is ensured to run appropriately and similarly in all targets, since their images are always based on *base units* provided in [`dua-foundation`](https://github.com/IntelligentSystemsLabUTV/dua-foundation).
+- **Target**: indicates a single Docker image that is used in a project, and that is built from a single `Dockerfile` and `docker-compose.yaml` pair plus many other configuration files; a target can be used to run a single unit, or multiple ones, or even a whole control architecture; the name resembles the meaning of the term *target* in the context of a `Makefile`, and is used to refer to the same concept in this context: each unit or architecture can have multiple targets, *i.e.*, Docker images, each one supporting a different hardware platform, System on Chip (SoC), and so on. The software that makes up a project is ensured to run appropriately and similarly in all targets, since their images are always based on *base units* provided in [`dua-foundation`](https://github.com/dotX-Automation/dua-foundation).
 
 **[`dua_setup.sh`](bin/dua_setup.sh) can be executed both inside and outside a DUA container, but must always be executed from a project's root directory, *i.e.*, like this**
 
@@ -217,7 +217,7 @@ dua_setup.sh create [-a UNIT1,UNIT2,...] NAME TARGET
 
 creates a new target, *i.e.*, a Docker image, for a project. The `-a` option can be used to specify a list of units that will be integrated in the new target, and the `NAME` argument is the name of the project.
 
-The `TARGET` argument is the name of the target. `TARGET` must be a valid target name, *i.e.*, one of the image tags in [`dua-foundation`](https://github.com/IntelligentSystemsLabUTV/dua-foundation).
+The `TARGET` argument is the name of the target. `TARGET` must be a valid target name, *i.e.*, one of the image tags in [`dua-foundation`](https://github.com/dotX-Automation/dua-foundation).
 
 **A password is required for all projects since the container's internal user runs with elevated privileges and has full access to the host's network stack and hardware devices.** It will be asked for during the creation of the target, and will be stored in hashed form in the target's `Dockerfile`.
 

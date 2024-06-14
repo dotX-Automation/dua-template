@@ -18,7 +18,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM intelligentsystemslabutv/dua-foundation:TARGET
+FROM dotxautomation/dua-foundation:TARGET
 
 # Change this if you encounter problems with the default user
 ARG USER_UID=1000
