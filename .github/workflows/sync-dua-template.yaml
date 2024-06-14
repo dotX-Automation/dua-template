@@ -25,10 +25,10 @@ on:
   schedule:
     - cron: "1 0 * * *"
 
-  # Run when this file changes
+  # Run when base branch is updated
   push:
-    paths:
-      - .github/workflows/sync-dua-template.yaml
+    branches:
+      - master
 
   # Run when manually triggered
   workflow_dispatch:
