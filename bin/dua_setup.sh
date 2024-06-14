@@ -250,6 +250,7 @@ function create_target {
   cp "bin/dua-templates/context/bashrc" "docker/container-${TARGET}/"
   cp "bin/dua-templates/context/colcon-defaults.yaml.template" "docker/container-${TARGET}/colcon-defaults.yaml"
   cp "bin/dua-templates/context/commands.sh" "docker/container-${TARGET}/"
+  cp "bin/dua-templates/context/dua_submod.sh" "docker/container-${TARGET}/"
   cp "bin/dua-templates/context/dua_subtree.sh" "docker/container-${TARGET}/"
   cp "bin/dua-templates/context/nanorc" "docker/container-${TARGET}/"
   cp "bin/dua-templates/context/p10k.zsh" "docker/container-${TARGET}/"

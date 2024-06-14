@@ -26,6 +26,7 @@
 # shellcheck disable=SC1090
 
 # Source DUA commands
+source ~/.dua_submod.sh
 source ~/.dua_subtree.sh
 
 # Routine to convert an angle in degrees [-180° +180°] to radians [-PI +PI].
