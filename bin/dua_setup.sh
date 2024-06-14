@@ -33,7 +33,7 @@ function usage {
   echo >&2 "    dua_setup.sh modify [-a UNIT1,UNIT2,...] [-r UNIT1,UNIT2,...] TARGET"
   echo >&2 "    dua_setup.sh clear TARGET"
   echo >&2 "    dua_setup.sh delete TARGET"
-  echo >&2 "See README.md for more info."
+  echo >&2 "See dua-template.md for more info."
 }
 
 if [[ "${1-}" =~ ^-*h(elp)?$ ]]; then
@@ -250,6 +250,7 @@ function create_target {
   cp "bin/dua-templates/context/bashrc" "docker/container-${TARGET}/"
   cp "bin/dua-templates/context/colcon-defaults.yaml.template" "docker/container-${TARGET}/colcon-defaults.yaml"
   cp "bin/dua-templates/context/commands.sh" "docker/container-${TARGET}/"
+  cp "bin/dua-templates/context/dua_subtree.sh" "docker/container-${TARGET}/"
   cp "bin/dua-templates/context/nanorc" "docker/container-${TARGET}/"
   cp "bin/dua-templates/context/p10k.zsh" "docker/container-${TARGET}/"
   cp "bin/dua-templates/context/ros2.sh" "docker/container-${TARGET}/"
