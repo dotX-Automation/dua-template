@@ -73,5 +73,11 @@ ros2init() {
 # Alias for colcon build command with maximum output
 alias cbuild='colcon build --event-handlers console_direct+ --symlink-install'
 
+# Aliases for ROS 2 daemon management
+alias ros2start='ros2 daemon start'
+alias ros2stop='ros2 daemon stop'
+alias ros2status='ros2 daemon status'
+alias ros2reset='ros2 daemon stop; ros2 daemon start'
+
 # Alias for Gazebo Classic that includes environment variables for HiDPI
 alias gazebo='QT_AUTO_SCREEN_SCALE_FACTOR=0 QT_SCREEN_SCALE_FACTORS=[1.0] /usr/bin/gazebo'
