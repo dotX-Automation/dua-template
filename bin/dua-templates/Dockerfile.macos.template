@@ -45,9 +45,6 @@ RUN mkdir ${HOME}/zsh_history && \
 # Create SSH directory for user
 RUN mkdir ${HOME}/.ssh
 
-# Give user permissions to operate on installations in /opt
-RUN chown -R neo:internal /opt/*
-
 # Switch to internal user
 USER neo
 WORKDIR ${HOME}
