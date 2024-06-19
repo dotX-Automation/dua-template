@@ -269,11 +269,15 @@ function create_target {
   # Copy and configure docker-compose.yml
   if [[ "${TARGET}" == "x86-cudev" ]] || [[ "${TARGET}" == "x86-cudev-ai" ]] || [[ "${TARGET}" == "jetsonnano" ]] || [[ "${TARGET}" == "jetsontx2" ]]; then
     cp "bin/dua-templates/docker-compose.yaml.nvidia.template" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
+    if [[ "${TARGET}" == "jetsonnano" ]] || [[ "${TARGET}" == "jetsontx2" ]]; then
+      $SED -i "/- \/sys:\/sys/a\      - \/run\/jtop.sock:\/run\/jtop.sock" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
+    fi
   elif [[ "${TARGET}" == "armv8-dev" ]] && [[ "${MACOS-0}" == "1" ]]; then
     cp "bin/dua-templates/docker-compose.yaml.macos.template" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
   elif [[ "${TARGET}" == "jetson5" ]] || [[ "${TARGET}" == "jetson5-ai" ]]; then
     cp "bin/dua-templates/docker-compose.yaml.template" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
     $SED -i "s/ipc: host/&\n    runtime: nvidia/g" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
+    $SED -i "/- \/sys:\/sys/a\      - \/run\/jtop.sock:\/run\/jtop.sock" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
   else
     cp "bin/dua-templates/docker-compose.yaml.template" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
   fi
