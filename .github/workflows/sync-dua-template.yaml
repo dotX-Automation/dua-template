@@ -89,6 +89,7 @@ jobs:
           _files="$(find ${REPO_TEMPLATE} \
             ! -path "*/.git/*" \
             ! -path "*/.github/workflows/*" \
+            ! -path "*/.vscode/*" \
             ! -name ".gitignore" \
             ! -name "LICENSE" \
             ! -name "README.md" \
