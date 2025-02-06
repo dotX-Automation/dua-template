@@ -214,7 +214,7 @@ dua_setup.sh clear TARGET
 
 and an explanation of all relevant commands follows in the next sections.
 
-**If any of these commands fail, it is possible that some artifacts are left in the current directory, *e.g.*, a file named `unitstmp`. Pay attention to remove that file and every other artifact before trying again.**
+**If any of these commands fail, it is possible that some artifacts are left in the current directory, *e.g.*, temporary files or partially-created directories. Attention has been paid in the development of the script function to avoid this but it may still happen. Pay attention to remove that file and every other artifact before trying again.**
 
 Before going further, it is important to highlight the meaning of some terms used to describe the parts of a DUA-based project.
 

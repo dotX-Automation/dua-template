@@ -133,45 +133,66 @@ function add_units {
   local TARGET
   TARGET="${1-}"
 
-  # Add the specified units to a temporary file
-  if [[ -f unitstmp ]]; then
-    rm unitstmp
-  fi
-  for UNIT in "${ADD_UNITS[@]}"; do
-    if grep -q "# ${UNIT} START #" "docker/container-${TARGET}/Dockerfile"; then
-      # If the unit is already present, just copy it to preserve local changes
-      echo "Copying unit ${UNIT} ..."
-      $SED -n \
-        "/^# ${UNIT} START #$/,/^# ${UNIT} END #$/p" \
-        "docker/container-${TARGET}/Dockerfile" >> unitstmp
-    else
-      # If the unit is not present, copy it from the source
-      echo "Adding unit ${UNIT} ..."
-      $SED -n \
-        "/^# ${UNIT} START #$/,/^# ${UNIT} END #$/p" \
-        "src/${UNIT}/docker/container-${TARGET}/Dockerfile" >> unitstmp
-    fi
-  done
+  # Create a temporary file descriptor for our needs
+  exec 3>"$(mktemp)"
+  local tmpfile="/dev/fd/3"
 
-  # Rebuild the target Dockerfile adding the new parts
+  # Create an associative array to track which units we've already added
+  # This prevents duplicate additions in a single operation
+  declare -A added_units
+
+  # Always start by copying everything up to and including IMAGE SETUP START
+  $SED -n '1,/^# IMAGE SETUP START #$/p' "docker/container-${TARGET}/Dockerfile" >&3
+
   if [[ "${#ADD_UNITS[@]}" -gt "1" ]]; then
-    # If more than one unit is added, clear the target first, then copy the new units
-    clear_units "${TARGET}" "0"
-    {
-      $SED -n '1,/^# IMAGE SETUP START #$/p' "docker/container-${TARGET}/Dockerfile"
-      cat unitstmp
-      $SED -n '/^# IMAGE SETUP END #$/,$p' "docker/container-${TARGET}/Dockerfile"
-    } > dockerfiletmp
+    # For multiple units, start fresh after IMAGE SETUP START
+    for UNIT in "${ADD_UNITS[@]}"; do
+      # Skip if we've already added this unit in this operation
+      if [[ ${added_units[$UNIT]+_} ]]; then
+        continue
+      fi
+
+      # Mark this unit as added
+      added_units[$UNIT]=1
+
+      if grep -q "# ${UNIT} START #" "docker/container-${TARGET}/Dockerfile"; then
+        # Copy existing unit configuration to preserve local changes
+        echo "Copying unit ${UNIT} ..."
+        $SED -n "/^# ${UNIT} START #$/,/^# ${UNIT} END #$/p" \
+          "docker/container-${TARGET}/Dockerfile" >&3
+      else
+        # Add new unit from its source
+        echo "Adding unit ${UNIT} ..."
+        $SED -n "/^# ${UNIT} START #$/,/^# ${UNIT} END #$/p" \
+          "src/${UNIT}/docker/container-${TARGET}/Dockerfile" >&3
+      fi
+    done
   else
-    # Copy the new unit's portion in the Dockerfile
-    {
-      $SED -n '/^# IMAGE SETUP END #$/q;p' "docker/container-${TARGET}/Dockerfile"
-      cat unitstmp
-      $SED -n '/^# IMAGE SETUP END #$/,$p' "docker/container-${TARGET}/Dockerfile"
-    } > dockerfiletmp
+    # For a single unit addition, only the version contained in the unit source is considered
+    UNIT="${ADD_UNITS[0]}"
+
+    # First, copy any existing units between IMAGE SETUP START and END
+    # but exclude the unit we're about to add to avoid duplication
+    $SED -n "/^# IMAGE SETUP START #$/,/^# IMAGE SETUP END #$/{
+      /^# IMAGE SETUP/!{
+        /^# ${UNIT} START #$/,/^# ${UNIT} END #$/!p
+      }
+    }" "docker/container-${TARGET}/Dockerfile" >&3
+
+    # Then add the new/updated unit
+    echo "Adding unit ${UNIT} ..."
+    $SED -n "/^# ${UNIT} START #$/,/^# ${UNIT} END #$/p" \
+      "src/${UNIT}/docker/container-${TARGET}/Dockerfile" >&3
   fi
-  mv dockerfiletmp "docker/container-${TARGET}/Dockerfile"
-  rm unitstmp
+
+  # Always end by adding IMAGE SETUP END and everything after it
+  $SED -n '/^# IMAGE SETUP END #$/,$p' "docker/container-${TARGET}/Dockerfile" >&3
+
+  # Replace the original file with our constructed version
+  cat "$tmpfile" > "docker/container-${TARGET}/Dockerfile"
+
+  # Clean up our file descriptor
+  exec 3>&-
 }
 
 # Function to remove units from a target.
