@@ -38,15 +38,23 @@ function degrad {
 
 # Routine to update dua-utils.
 function utils-update {
-  CURR_SHELL=$(ps -p $$ | awk 'NR==2 {print $4}')
+  # Store original directory
+  local curr_dir
+  curr_dir=$(pwd)
 
-  pushd || return
-  cd /opt/ros/dua-utils || return
+  # Get the current shell
+  local curr_shell
+  curr_shell=$(ps -p $$ | awk 'NR==2 {print $4}')
+
+  # Perform updates
+  cd /opt/ros/dua-utils || return 1
   git pull
   git submodule update --init --recursive
   rm -rf install
   colcon build --merge-install
   rm -rf build log
-  source "install/local_setup.$CURR_SHELL"
-  popd || return
+  source "install/local_setup.$curr_shell"
+
+  # Restore original directory
+  cd "$curr_dir" || return 1
 }
