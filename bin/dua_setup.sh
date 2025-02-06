@@ -72,7 +72,7 @@ elif [[ "$OS_NAME" == "Darwin" ]]; then
   NO_GNU=1
   MACOS=1
 else
-  echo >&2 "ERROR: Unsupported operating system"
+  echo >&2 "ERROR: Operating system not supported"
   exit 1
 fi
 
@@ -119,7 +119,7 @@ function units_to_array {
 
 # Function to check that a target is valid.
 function check_target {
-  if [[ "${1-}" =~ ^(x86-base|x86-dev|x86-cudev|x86-cudev-ai|armv8-base|armv8-dev|jetson5|jetson5-ai|jetsonnano|jetsontx2)$ ]]; then
+  if [[ "${1-}" =~ ^(x86-base|x86-dev|x86-cudev|armv8-base|armv8-dev|jetson6|jetson5|jetsonnano|jetsontx2)$ ]]; then
     return 0
   else
     echo >&2 "ERROR: Invalid target: ${1-}"
@@ -298,11 +298,11 @@ function create_target {
   $SED -i "s/SERVICE/${SERVICE}/g" "docker/container-${TARGET}/.devcontainer/devcontainer.json"
 
   # Copy and configure docker-compose.yml
-  if [[ "${TARGET}" == "x86-cudev" ]] || [[ "${TARGET}" == "x86-cudev-ai" ]] || [[ "${TARGET}" == "jetsonnano" ]] || [[ "${TARGET}" == "jetsontx2" ]]; then
+  if [[ "${TARGET}" == "x86-cudev" ]] || [[ "${TARGET}" == "jetsonnano" ]] || [[ "${TARGET}" == "jetsontx2" ]]; then
     cp "bin/dua-templates/docker-compose.yaml.nvidia.template" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
   elif [[ "${TARGET}" == "armv8-dev" ]] && [[ "${MACOS-0}" == "1" ]]; then
     cp "bin/dua-templates/docker-compose.yaml.macos.template" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
-  elif [[ "${TARGET}" == "jetson5" ]] || [[ "${TARGET}" == "jetson5-ai" ]]; then
+  elif [[ "${TARGET}" == "jetson6" ]] || [[ "${TARGET}" == "jetson5" ]]; then
     cp "bin/dua-templates/docker-compose.yaml.template" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
     $SED -i "s/ipc: host/&\n    runtime: nvidia/g" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
   else
