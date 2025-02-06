@@ -31,47 +31,48 @@ ros2init() {
   export ROS_PYTHON_VERSION=3
   export ROS_DISTRO=humble
 
-  CURR_SHELL=$(ps -p $$ | awk 'NR==2 {print $4}')
+  local curr_shell
+  curr_shell=$(ps -p $$ | awk 'NR==2 {print $4}')
 
   # Check that the ROS 2 installation is present, and source it
-  if [[ -f /opt/ros/$ROS_DISTRO/setup.$CURR_SHELL ]]; then
-    source /opt/ros/$ROS_DISTRO/setup.$CURR_SHELL
-  elif [[ -f /opt/ros/$ROS_DISTRO/install/setup.$CURR_SHELL ]]; then
-    source /opt/ros/$ROS_DISTRO/install/setup.$CURR_SHELL
+  if [[ -f /opt/ros/$ROS_DISTRO/setup.$curr_shell ]]; then
+    source /opt/ros/$ROS_DISTRO/setup.$curr_shell
+  elif [[ -f /opt/ros/$ROS_DISTRO/install/setup.$curr_shell ]]; then
+    source /opt/ros/$ROS_DISTRO/install/setup.$curr_shell
   else
     echo >&2 "ROS 2 installation not found."
     return 1
   fi
 
   # Source additional stuff for colcon argcomplete
-  source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.$CURR_SHELL
+  source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.$curr_shell
 
   # Source Ignition Gazebo stuff
-  if [[ -f /opt/gazebo/fortress/install/setup.$CURR_SHELL ]]; then
-    source /opt/gazebo/fortress/install/setup.$CURR_SHELL
+  if [[ -f /opt/gazebo/fortress/install/setup.$curr_shell ]]; then
+    source /opt/gazebo/fortress/install/setup.$curr_shell
   fi
-  if [[ -f /opt/ros/ros_gz/install/local_setup.$CURR_SHELL ]]; then
-    source /opt/ros/ros_gz/install/local_setup.$CURR_SHELL
+  if [[ -f /opt/ros/ros_gz/install/local_setup.$curr_shell ]]; then
+    source /opt/ros/ros_gz/install/local_setup.$curr_shell
   fi
 
   # Source our fork of rmw_fastrtps
-  if [[ -f /opt/ros/rmw_fastrtps/install/local_setup.$CURR_SHELL ]]; then
-    source /opt/ros/rmw_fastrtps/install/local_setup.$CURR_SHELL
+  if [[ -f /opt/ros/rmw_fastrtps/install/local_setup.$curr_shell ]]; then
+    source /opt/ros/rmw_fastrtps/install/local_setup.$curr_shell
   fi
 
   # Source additional DUA stuff
-  if [[ -f /opt/ros/dua-utils/install/local_setup.$CURR_SHELL ]]; then
-    source /opt/ros/dua-utils/install/local_setup.$CURR_SHELL
+  if [[ -f /opt/ros/dua-utils/install/local_setup.$curr_shell ]]; then
+    source /opt/ros/dua-utils/install/local_setup.$curr_shell
   fi
 
   # Source workspace if present
-  if [[ -f /home/neo/workspace/install/local_setup.$CURR_SHELL ]]; then
-    source /home/neo/workspace/install/local_setup.$CURR_SHELL
+  if [[ -f /home/neo/workspace/install/local_setup.$curr_shell ]]; then
+    source /home/neo/workspace/install/local_setup.$curr_shell
   fi
 }
 
 # Alias for colcon build command with maximum output
-alias cbuild='colcon build --event-handlers console_direct+ --symlink-install'
+alias cbuild='colcon build --event-handlers console_direct+ --symlink-install --continue-on-error'
 
 # Aliases for ROS 2 daemon management
 alias ros2start='ros2 daemon start'
