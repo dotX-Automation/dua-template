@@ -31,6 +31,7 @@ services:
       TERM: xterm-256color
       DISPLAY: host.docker.internal:0
       SHELL: /usr/bin/zsh
+      SSH_AUTH_SOCK:
     user: neo
     network_mode: "host"
     privileged: true
@@ -59,6 +60,7 @@ services:
       - ~/.ssh:/home/neo/.ssh
       - ~/.gitconfig:/home/neo/.gitconfig
       - ~/.Xauthority:/home/neo/.Xauthority:rw
+      - /run/host-services/ssh-auth.sock:/run/host-services/ssh-auth.sock
       - /dev:/dev
       - /sys:/sys
       - /etc/localtime:/etc/localtime:ro
