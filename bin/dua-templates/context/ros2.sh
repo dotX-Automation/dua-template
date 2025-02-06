@@ -29,7 +29,7 @@ ros2init() {
   fi
   export ROS_VERSION=2
   export ROS_PYTHON_VERSION=3
-  export ROS_DISTRO=humble
+  export ROS_DISTRO=jazzy
 
   local curr_shell
   curr_shell=$(ps -p $$ | awk 'NR==2 {print $4}')
@@ -48,16 +48,11 @@ ros2init() {
   source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.$curr_shell
 
   # Source Ignition Gazebo stuff
-  if [[ -f /opt/gazebo/fortress/install/setup.$curr_shell ]]; then
-    source /opt/gazebo/fortress/install/setup.$curr_shell
+  if [[ -f /opt/gazebo/harmonic/install/setup.$curr_shell ]]; then
+    source /opt/gazebo/harmonic/install/setup.$curr_shell
   fi
   if [[ -f /opt/ros/ros_gz/install/local_setup.$curr_shell ]]; then
     source /opt/ros/ros_gz/install/local_setup.$curr_shell
-  fi
-
-  # Source our fork of rmw_fastrtps
-  if [[ -f /opt/ros/rmw_fastrtps/install/local_setup.$curr_shell ]]; then
-    source /opt/ros/rmw_fastrtps/install/local_setup.$curr_shell
   fi
 
   # Source additional DUA stuff
@@ -79,6 +74,3 @@ alias ros2start='ros2 daemon start'
 alias ros2stop='ros2 daemon stop'
 alias ros2status='ros2 daemon status'
 alias ros2reset='ros2 daemon stop; ros2 daemon start'
-
-# Alias for Gazebo Classic that includes environment variables for HiDPI
-alias gazebo='QT_AUTO_SCREEN_SCALE_FACTOR=0 QT_SCREEN_SCALE_FACTORS=[1.0] /usr/bin/gazebo'
