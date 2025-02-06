@@ -215,15 +215,25 @@ function clear_units {
   TARGET="${1-}"
   VERBOSE="${2-1}"
 
-  # Remove all units with a clever copy-paste
+  # Create a temporary file descriptor for our needs
+  exec 3>"$(mktemp)"
+  local tmpfile="/dev/fd/3"
+
   if [[ "${VERBOSE}" == "1" ]]; then
     echo "Removing all units from target ${TARGET} ..."
   fi
-  {
-    $SED -n '1,/^# IMAGE SETUP START #$/p' "docker/container-${TARGET}/Dockerfile"
-    $SED -n '/^# IMAGE SETUP END #$/,$p' "docker/container-${TARGET}/Dockerfile"
-  } > dockerfiletmp
-  mv dockerfiletmp "docker/container-${TARGET}/Dockerfile"
+
+  # Copy everything up to and including IMAGE SETUP START
+  $SED -n '1,/^# IMAGE SETUP START #$/p' "docker/container-${TARGET}/Dockerfile" >&3
+
+  # Copy IMAGE SETUP END and everything after it
+  $SED -n '/^# IMAGE SETUP END #$/,$p' "docker/container-${TARGET}/Dockerfile" >&3
+
+  # Replace the original file with our constructed version
+  cat "$tmpfile" > "docker/container-${TARGET}/Dockerfile"
+
+  # Clean up our file descriptor
+  exec 3>&-
 }
 
 # Function to create a new target.
