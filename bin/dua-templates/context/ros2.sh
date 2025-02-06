@@ -82,20 +82,31 @@ function _ros2bag_validate_args {
     return 1
   fi
 
-  # For record mode, we need exactly 4 arguments
+  # For record mode, we need either 4 or 5 arguments
   if [[ "$1" == "record" ]]; then
-    if [[ $# -ne 4 ]]; then
+    # First check if --use-sim-time is present
+    local use_sim_time=false
+    if [[ "$2" == "--use-sim-time" ]]; then
+      use_sim_time=true
+      # Shift arguments for easier validation
+      shift 2
+    else
+      shift 1
+    fi
+
+    # Now check remaining arguments
+    if [[ $# -ne 3 ]]; then
       return 1
     fi
     # Check that topics file exists and is readable
-    if [[ ! -f "$2" ]]; then
+    if [[ ! -f "$1" ]]; then
       return 2
     fi
-    if [[ ! -r "$2" ]]; then
+    if [[ ! -r "$1" ]]; then
       return 3
     fi
     # Check that cache size is a positive integer
-    if ! [[ "$4" =~ ^[0-9]+$ ]]; then
+    if ! [[ "$3" =~ ^[0-9]+$ ]]; then
       return 4
     fi
   fi
@@ -118,24 +129,27 @@ function _ros2bag_validate_args {
 function ros2bag {
   function usage {
     echo >&2 "Usage:"
-    echo >&2 "    ros2bag record TOPICS_FILE OUTPUT_DIR CACHE_SIZE"
+    echo >&2 "    ros2bag record [--use-sim-time] TOPICS_FILE OUTPUT_DIR CACHE_SIZE"
     echo >&2 "    ros2bag play BAG_PATH [PLAY_OPTIONS...]"
     echo >&2 ""
     echo >&2 "Arguments for record mode:"
-    echo >&2 "    TOPICS_FILE: Path to a text file containing full names of the topics to sample,"
-    echo >&2 "                 one per line"
-    echo >&2 "    OUTPUT_DIR:  Name of the directory to create in ~/workspace/logs/ to store the"
-    echo >&2 "                 sampled data"
-    echo >&2 "    CACHE_SIZE:  Approximately the amount of data in bytes that must be recorded"
-    echo >&2 "                 within one second of sampling"
+    echo >&2 "    --use-sim-time: Optional. If present, enables ROS time simulation support."
+    echo >&2 "                    No message will be recorded until the first message is received"
+    echo >&2 "                    on the /clock topic."
+    echo >&2 "    TOPICS_FILE:    Path to a text file containing full names of the topics to sample,"
+    echo >&2 "                    one per line."
+    echo >&2 "    OUTPUT_DIR:     Name of the directory to create in ~/workspace/logs/ to store the"
+    echo >&2 "                    sampled data."
+    echo >&2 "    CACHE_SIZE:     Approximately the amount of data in bytes that must be recorded"
+    echo >&2 "                    within one second of sampling."
     echo >&2 ""
     echo >&2 "Arguments for play mode:"
-    echo >&2 "    BAG_PATH:     Path to the ROS 2 bag directory"
-    echo >&2 "    PLAY_OPTIONS: Additional options to pass to ros2 bag play"
+    echo >&2 "    BAG_PATH:     Path to the ROS 2 bag directory."
+    echo >&2 "    PLAY_OPTIONS: Additional options to pass to ros2 bag play."
     echo >&2 ""
     echo >&2 "The function will:"
-    echo >&2 "    - In record mode: Start the recording process, which can be stopped with Ctrl+C"
-    echo >&2 "    - In play mode:   Play back the bag with clock publishing enabled"
+    echo >&2 "    - In record mode: Start the recording process, which can be stopped with Ctrl+C."
+    echo >&2 "    - In play mode:   Play back the bag with clock publishing enabled."
     echo >&2 "                      Remember to reset RViz and set use_sim_time to true everywhere!"
   }
 
@@ -156,11 +170,19 @@ function ros2bag {
       return 1
       ;;
     2)
-      echo >&2 "ERROR: Topics file does not exist: $2"
+      if [[ "$2" == "--use-sim-time" ]]; then
+        echo >&2 "ERROR: Topics file does not exist: $3"
+      else
+        echo >&2 "ERROR: Topics file does not exist: $2"
+      fi
       return 1
       ;;
     3)
-      echo >&2 "ERROR: Topics file is not readable: $2"
+      if [[ "$2" == "--use-sim-time" ]]; then
+        echo >&2 "ERROR: Topics file is not readable: $3"
+      else
+        echo >&2 "ERROR: Topics file is not readable: $2"
+      fi
       return 1
       ;;
     4)
@@ -179,11 +201,25 @@ function ros2bag {
 
   # Handle record mode
   if [[ "$1" == "record" ]]; then
+    # Check for --use-sim-time and prepare arguments
+    local topics_file output_dir cache_size use_sim_time_opt
+    if [[ "$2" == "--use-sim-time" ]]; then
+      use_sim_time_opt="--use-sim-time"
+      topics_file="$3"
+      output_dir="$4"
+      cache_size="$5"
+    else
+      use_sim_time_opt=""
+      topics_file="$2"
+      output_dir="$3"
+      cache_size="$4"
+    fi
+
     # Read topics from file
     local TOPICS=()
     while IFS= read -r line; do
       TOPICS+=("$line")
-    done < "$2"
+    done < "$topics_file"
 
     # Check that we have topics to record
     if [[ ${#TOPICS[@]} -eq 0 ]]; then
@@ -196,6 +232,9 @@ function ros2bag {
     for topic in "${TOPICS[@]}"; do
       echo "$topic"
     done
+    if [[ -n "$use_sim_time_opt" ]]; then
+      echo -e "\nExternal time source will be used"
+    fi
     printf '\n'
 
     # Wait for user acknowledgment
@@ -203,9 +242,10 @@ function ros2bag {
 
     # Start recording
     if ! ros2 bag record \
-      -o "/home/neo/workspace/logs/$3" \
+      -o "/home/neo/workspace/logs/$output_dir" \
       --include-unpublished-topics \
-      --max-cache-size "$4" \
+      --max-cache-size "$cache_size" \
+      $use_sim_time_opt \
       "${TOPICS[@]}"; then
       echo >&2 "ERROR: ros2 bag record failed"
       return 1
@@ -213,7 +253,7 @@ function ros2bag {
 
     # Print bag size if recording completed successfully
     local BAG_SIZE
-    BAG_SIZE=$(du -sh "/home/neo/workspace/logs/$3/$3_0.db3" | cut -f1)
+    BAG_SIZE=$(du -sh "/home/neo/workspace/logs/$output_dir/${output_dir}_0.db3" | cut -f1)
     echo -e "\nBag size: $BAG_SIZE"
     return 0
   fi
