@@ -312,6 +312,16 @@ function create_target {
   $SED -i "s/NAME/${NAME}/g" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
   $SED -i "s/TARGET/${TARGET}/g" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
 
+  # Add restart policy for SBC targets
+  if [[ "${TARGET}" == "x86-base" ]] || \
+     [[ "${TARGET}" == "armv8-base" ]] || \
+     [[ "${TARGET}" == "jetson6" ]] || \
+     [[ "${TARGET}" == "jetson5" ]] || \
+     [[ "${TARGET}" == "jetsontx2" ]] || \
+     [[ "${TARGET}" == "jetsonnano" ]]; then
+    $SED -i "s/network_mode: \"host\"/&\n    restart: always/g" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
+  fi
+
   # Copy and configure Dockerfile, adding units if requested
   if [[ "${TARGET}" == "armv8-dev" ]] && [[ "${MACOS-0}" == "1" ]]; then
     cp "bin/dua-templates/Dockerfile.macos.template" "docker/container-${TARGET}/Dockerfile"
