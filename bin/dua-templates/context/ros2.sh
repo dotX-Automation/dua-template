@@ -30,6 +30,8 @@ ros2init() {
   export ROS_VERSION=2
   export ROS_PYTHON_VERSION=3
   export ROS_DISTRO=jazzy
+  export ROS_AUTOMATIC_DISCOVERY_RANGE=SUBNET
+  export ROS_STATIC_PEERS=""
 
   local curr_shell
   curr_shell=$(ps -p $$ | awk 'NR==2 {print $4}')
