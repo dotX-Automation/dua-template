@@ -99,5 +99,5 @@
   // Start the VS Code instance in the container's workspace
   "workspaceFolder": "/home/neo/workspace",
   // Creates a sleeping process that VSC uses to stop the container
-  "overrideCommand": true
+  "overrideCommand": false
 }
