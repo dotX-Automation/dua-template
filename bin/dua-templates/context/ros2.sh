@@ -24,14 +24,25 @@
 
 # Initialize ROS 2 environment according to the current shell.
 ros2init() {
-  if [[ $# -ne 0 ]]; then
-    export ROS_DOMAIN_ID=$1
-  fi
+  # Configure ROS environment
   export ROS_VERSION=2
   export ROS_PYTHON_VERSION=3
   export ROS_DISTRO=jazzy
+
+  # Configure RMW environment
+  if [[ $# -ne 0 ]]; then
+    export ROS_DOMAIN_ID=$1
+  else
+    export ROS_DOMAIN_ID=0
+  fi
   export ROS_AUTOMATIC_DISCOVERY_RANGE=SUBNET
   export ROS_STATIC_PEERS=""
+
+  # Configure RMW Zenoh environment
+  export ZENOH_ROUTER_CHECK_ATTEMPTS=1
+  export ZENOH_ROUTER_CONFIG_URI="/etc/zenoh/rmw/DEFAULT_RMW_ZENOH_ROUTER_CONFIG.json5"
+  export ZENOH_SESSION_CONFIG_URI="/etc/zenoh/rmw/DEFAULT_RMW_ZENOH_SESSION_CONFIG.json5"
+  export RUST_LOG=zenoh=info
 
   local curr_shell
   curr_shell=$(ps -p $$ | awk 'NR==2 {print $4}')
