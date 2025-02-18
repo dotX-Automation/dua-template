@@ -61,7 +61,7 @@ services:
       - ~/.ssh:/home/neo/.ssh
       - ~/.gitconfig:/home/neo/.gitconfig
       - ~/.Xauthority:/home/neo/.Xauthority:rw
-      - ${SSH_AUTH_SOCK}:${SSH_AUTH_SOCK}:rw
+      - ${SSH_AUTH_SOCK-./no-ssh-sock}:${SSH_AUTH_SOCK-/opt/no-ssh-sock}:rw
       - /dev:/dev
       - /sys:/sys
       - /etc/localtime:/etc/localtime:ro
