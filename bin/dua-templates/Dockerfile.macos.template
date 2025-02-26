@@ -46,6 +46,10 @@ RUN mkdir ${HOME}/zsh_history && \
 # Create SSH directory for user
 RUN mkdir ${HOME}/.ssh
 
+# Create mount point for remote filesystems
+RUN mkdir -p /mnt/remote && \
+  chown neo:neo /mnt/remote
+
 # Switch to internal user
 USER neo
 WORKDIR ${HOME}
