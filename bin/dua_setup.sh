@@ -299,13 +299,17 @@ function create_target {
 
   # Copy and configure docker-compose.yml
   if [[ "${TARGET}" == "x86-cudev" ]] || [[ "${TARGET}" == "jetsonnano" ]] || [[ "${TARGET}" == "jetsontx2" ]]; then
+    # Compose file for Nvidia devices (including 1st gen. legacy targets)
     cp "bin/dua-templates/docker-compose.yaml.nvidia.template" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
   elif [[ "${TARGET}" == "armv8-dev" ]] && [[ "${MACOS-0}" == "1" ]]; then
+    # Compose file for macOS ARM64
     cp "bin/dua-templates/docker-compose.yaml.macos.template" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
   elif [[ "${TARGET}" == "jetson6" ]] || [[ "${TARGET}" == "jetson5" ]]; then
+    # Compose file for Jetson devices with JetPack 5.x/6.x, need only runtime specified
     cp "bin/dua-templates/docker-compose.yaml.template" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
     $SED -i "s/ipc: host/&\n    runtime: nvidia/g" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
   else
+    # Compose file for anything else
     cp "bin/dua-templates/docker-compose.yaml.template" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
   fi
   $SED -i "s/SERVICE/${SERVICE}/g" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
@@ -320,6 +324,11 @@ function create_target {
      [[ "${TARGET}" == "jetsontx2" ]] || \
      [[ "${TARGET}" == "jetsonnano" ]]; then
     $SED -i "s/network_mode: \"host\"/&\n    restart: always/g" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
+  fi
+
+  # Add necessary groups for Jetson devices running JetPack 6.x to access GPU and onboard peripherals
+  if [[ "${TARGET}" == "jetson6" ]]; then
+    $SED -i "/user: neo/a\\    group_add:\\n      - 10\\n      - 20\\n      - 29\\n      - 30\\n      - 44\\n      - 46\\n      - 104\\n      - 116\\n      - 999" "docker/container-${TARGET}/.devcontainer/docker-compose.yaml"
   fi
 
   # Copy and configure Dockerfile, adding units if requested
