@@ -288,7 +288,6 @@ function create_target {
   cp "bin/dua-templates/context/ros2.sh" "docker/container-${TARGET}/"
   cp "bin/dua-templates/context/vimrc" "docker/container-${TARGET}/"
   cp "bin/dua-templates/context/zshrc" "docker/container-${TARGET}/"
-  cp "bin/dua-templates/no-ssh-sock" "docker/container-${TARGET}/.devcontainer/"
 
   # Create and configure the Zsh history directory
   mkdir "docker/container-${TARGET}/zsh_history"
