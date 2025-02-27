@@ -1,4 +1,5 @@
-# Ignore everything in this folder except this file
+# Ignore everything in this folder except the control files
 # This is the default, feel free to add other exceptions
 *
 !.gitignore
+!COLCON_IGNORE
