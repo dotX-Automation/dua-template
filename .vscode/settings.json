@@ -95,8 +95,8 @@
   "python.languageServer": "Pylance",
   "python.analysis.extraPaths": [
     "/opt/dua-venv/lib/python3.10/site-packages/",
-    "/opt/ros/humble/lib/python3.10/site-packages/",
-    "/opt/ros/humble/local/lib/python3.10/dist-packages/",
+    "/opt/ros/jazzy/lib/python3.10/site-packages/",
+    "/opt/ros/jazzy/local/lib/python3.10/dist-packages/",
     "/opt/ros/dua-utils/install/lib/python3.10/site-packages/",
     "/opt/ros/dua-utils/install/local/lib/python3.10/dist-packages/"
     // Add your own paths here!
@@ -104,8 +104,8 @@
   // Autocomplete from ros python packages
   "python.autoComplete.extraPaths": [
     "/opt/dua-venv/lib/python3.10/site-packages/",
-    "/opt/ros/humble/lib/python3.10/site-packages/",
-    "/opt/ros/humble/local/lib/python3.10/dist-packages/",
+    "/opt/ros/jazzy/lib/python3.10/site-packages/",
+    "/opt/ros/jazzy/local/lib/python3.10/dist-packages/",
     "/opt/ros/dua-utils/install/lib/python3.10/site-packages/",
     "/opt/ros/dua-utils/install/local/lib/python3.10/dist-packages/"
     // Add your own paths here!
@@ -118,7 +118,7 @@
   },
   "C_Cpp.default.intelliSenseMode": "linux-gcc-x64",
   "C_Cpp.formatting": "disabled",
-  "uncrustify.configPath.linux": "/opt/ros/humble/lib/python3.10/site-packages/ament_uncrustify/configuration/ament_code_style.cfg",
+  "uncrustify.configPath.linux": "/opt/ros/jazzy/lib/python3.10/site-packages/ament_uncrustify/configuration/ament_code_style.cfg",
   "[cpp]": {
     "editor.defaultFormatter": "zachflower.uncrustify"
   },
@@ -154,5 +154,5 @@
     "**/zshenv": true,
     "**/*.zsh-theme": true
   },
-  "ros.distro": "humble"
+  "ros.distro": "jazzy"
 }

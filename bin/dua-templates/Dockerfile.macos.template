@@ -31,7 +31,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Create a user with Zsh as shell, hashed password, and add it to the sudoers
 # To generate the hashed password, run:
 #   mkpasswd -m sha-512 PASSWORD duatemplate
-RUN useradd -r -m -s /usr/bin/zsh -u ${USER_UID} -G adm,dialout,internal,plugdev,sudo,tty,video -p 'HPSW' neo
+RUN (getent passwd ${USER_UID} || true) && userdel -r $(getent passwd ${USER_UID} | cut -d: -f1) 2>/dev/null || true; \
+  useradd -r -m -s /usr/bin/zsh -u ${USER_UID} -G adm,dialout,internal,plugdev,sudo,tty,video -p 'HPSW' neo
 ENV HOME=/home/neo
 
 # Create workspace directory: host workspaces will be mounted here
@@ -44,6 +45,10 @@ RUN mkdir ${HOME}/zsh_history && \
 
 # Create SSH directory for user
 RUN mkdir ${HOME}/.ssh
+
+# Create mount point for remote filesystems
+RUN mkdir -p /mnt/remote && \
+  chown neo:neo /mnt/remote
 
 # Switch to internal user
 USER neo

@@ -38,15 +38,44 @@ function degrad {
 
 # Routine to update dua-utils.
 function utils-update {
-  CURR_SHELL=$(ps -p $$ | awk 'NR==2 {print $4}')
+  local repos_file
 
-  pushd || return
-  cd /opt/ros/dua-utils || return
-  git pull
-  git submodule update --init --recursive
-  rm -rf install
-  colcon build --merge-install
-  rm -rf build log
-  source "install/local_setup.$CURR_SHELL"
-  popd || return
+  # Get the current shell
+  local curr_shell
+  curr_shell=$(ps -p $$ | awk 'NR==2 {print $4}')
+
+  # Download new repos file
+  if [ -f /opt/dua-utils_repos_base.yaml ]; then
+    wget -O /opt/dua-utils_repos_base.yaml https://raw.githubusercontent.com/dotX-Automation/dua-foundation/refs/heads/master/scripts/ros2/dua-utils_repos_base.yaml
+    repos_file=/opt/dua-utils_repos_base.yaml
+  elif [ -f /opt/dua-utils_repos_dev.yaml ]; then
+    wget -O /opt/dua-utils_repos_dev.yaml https://raw.githubusercontent.com/dotX-Automation/dua-foundation/refs/heads/master/scripts/ros2/dua-utils_repos_dev.yaml
+    repos_file=/opt/dua-utils_repos_dev.yaml
+  else
+    echo >&2 "No repos file found."
+    return 1
+  fi
+
+  # Perform updates
+  if [ -x /opt/build_dua_utils.sh ]; then
+    echo "Cloning and building dua-utils from $repos_file ..."
+    sh -c "rm -rf /opt/ros/dua-utils/*"
+    sh -c "/opt/build_dua_utils.sh jazzy $repos_file"
+  else
+    echo >&2 "No build script found."
+    return 1
+  fi
+
+  # Source new installation
+  source "/opt/ros/dua-utils/install/local_setup.$curr_shell"
+}
+
+# Routine to configure Cyclone DDS to use specific network interfaces.
+function cyclonedds-configure {
+  local cyclonedds_uri='<CycloneDDS><Domain><General><Interfaces>'
+  for interface in "$@"; do
+    cyclonedds_uri+="<NetworkInterface name=\"$interface\" priority=\"default\" multicast=\"true\"/>"
+  done
+  cyclonedds_uri+='</Interfaces></General></Domain></CycloneDDS>'
+  export CYCLONEDDS_URI="$cyclonedds_uri"
 }
