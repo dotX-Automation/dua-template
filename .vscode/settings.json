@@ -118,7 +118,7 @@
   },
   "C_Cpp.default.intelliSenseMode": "linux-gcc-x64",
   "C_Cpp.formatting": "disabled",
-  "uncrustify.configPath.linux": "/opt/ros/jazzy/lib/python3.10/site-packages/ament_uncrustify/configuration/ament_code_style.cfg",
+  "uncrustify.configPath.linux": "/opt/ros/jazzy/lib/python3.12/site-packages/ament_uncrustify/configuration/ament_code_style_0_78.cfg",
   "[cpp]": {
     "editor.defaultFormatter": "zachflower.uncrustify"
   },
