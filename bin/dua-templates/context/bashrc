@@ -125,6 +125,23 @@ source ~/.aliases.sh
 source ~/.commands.sh
 source ~/.ros2.sh && ros2init
 
+# Load commands from DUA subprojects for current target
+if [ -f /etc/dua/target ]; then
+  DUA_TARGET=$(cat /etc/dua/target)
+  if [ -n "$DUA_TARGET" ]; then
+    # Iterate through all directories in workspace/src
+    for DIR in /home/neo/workspace/src/*/; do
+      if [ -d "$DIR" ]; then
+        COMMANDS_PATH="${DIR}docker/container-${DUA_TARGET}/commands.sh"
+        if [ -f "$COMMANDS_PATH" ]; then
+          # Source the commands file if it exists
+          source "$COMMANDS_PATH"
+        fi
+      fi
+    done
+  fi
+fi
+
 # enable programmable completion features (you don't need to enable
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
 # sources /etc/bash.bashrc).
