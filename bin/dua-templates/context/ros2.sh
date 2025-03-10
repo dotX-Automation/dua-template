@@ -264,10 +264,6 @@ function ros2bag {
       return 1
     fi
 
-    # Print bag size if recording completed successfully
-    local BAG_SIZE
-    BAG_SIZE=$(du -sh "/home/neo/workspace/logs/$output_dir/${output_dir}_0.db3" | cut -f1)
-    echo -e "\nBag size: $BAG_SIZE"
     return 0
   fi
 
