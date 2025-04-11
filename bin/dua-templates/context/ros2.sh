@@ -47,17 +47,33 @@ ros2init() {
   local curr_shell
   curr_shell=$(ps -p $$ | awk 'NR==2 {print $4}')
 
-  # Source additional stuff for colcon argcomplete
-  source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.$curr_shell
+  # Write an if statement that checks if the file /etc/dua/target contains the word "jetson"
+  if grep -q "jetson" /etc/dua/target; then
+    # Source additional stuff for colcon argcomplete
+    source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.$curr_shell
 
-  # Check that the ROS 2 installation is present, and source it
-  if [[ -f /opt/ros/$ROS_DISTRO/setup.$curr_shell ]]; then
-    source /opt/ros/$ROS_DISTRO/setup.$curr_shell
-  elif [[ -f /opt/ros/$ROS_DISTRO/install/setup.$curr_shell ]]; then
-    source /opt/ros/$ROS_DISTRO/install/setup.$curr_shell
+    # Check that the ROS 2 installation is present, and source it
+    if [[ -f /opt/ros/$ROS_DISTRO/setup.$curr_shell ]]; then
+      source /opt/ros/$ROS_DISTRO/setup.$curr_shell
+    elif [[ -f /opt/ros/$ROS_DISTRO/install/setup.$curr_shell ]]; then
+      source /opt/ros/$ROS_DISTRO/install/setup.$curr_shell
+    else
+      echo >&2 "ROS 2 installation not found."
+      return 1
+    fi
   else
-    echo >&2 "ROS 2 installation not found."
-    return 1
+    # Check that the ROS 2 installation is present, and source it
+    if [[ -f /opt/ros/$ROS_DISTRO/setup.$curr_shell ]]; then
+      source /opt/ros/$ROS_DISTRO/setup.$curr_shell
+    elif [[ -f /opt/ros/$ROS_DISTRO/install/setup.$curr_shell ]]; then
+      source /opt/ros/$ROS_DISTRO/install/setup.$curr_shell
+    else
+      echo >&2 "ROS 2 installation not found."
+      return 1
+    fi
+
+    # Source additional stuff for colcon argcomplete
+    source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.$curr_shell
   fi
 
   # Source Ignition Gazebo stuff
