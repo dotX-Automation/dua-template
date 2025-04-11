@@ -47,6 +47,9 @@ ros2init() {
   local curr_shell
   curr_shell=$(ps -p $$ | awk 'NR==2 {print $4}')
 
+  # Source additional stuff for colcon argcomplete
+  source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.$curr_shell
+
   # Check that the ROS 2 installation is present, and source it
   if [[ -f /opt/ros/$ROS_DISTRO/setup.$curr_shell ]]; then
     source /opt/ros/$ROS_DISTRO/setup.$curr_shell
@@ -56,9 +59,6 @@ ros2init() {
     echo >&2 "ROS 2 installation not found."
     return 1
   fi
-
-  # Source additional stuff for colcon argcomplete
-  source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.$curr_shell
 
   # Source Ignition Gazebo stuff
   if [[ -f /opt/gazebo/harmonic/install/setup.$curr_shell ]]; then
