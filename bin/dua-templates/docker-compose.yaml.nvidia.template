@@ -31,10 +31,13 @@ services:
       TERM: xterm-256color
       DISPLAY:
       SHELL: /usr/bin/zsh
+      __NV_PRIME_RENDER_OFFLOAD: "1"
+      __GLX_VENDOR_LIBRARY_NAME: "nvidia"
     user: neo
     network_mode: "host"
     privileged: true
     ipc: host
+    runtime: nvidia
     init: true
     stdin_open: false
     tty: true
@@ -60,6 +63,7 @@ services:
       - ~/.ssh:/home/neo/.ssh
       - ~/.gitconfig:/home/neo/.gitconfig
       - ~/.Xauthority:/home/neo/.Xauthority:rw
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - /dev:/dev
       - /sys:/sys
       - /etc/localtime:/etc/localtime:ro
