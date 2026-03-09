@@ -28,6 +28,7 @@ ros2init() {
   export ROS_VERSION=2
   export ROS_PYTHON_VERSION=3
   export ROS_DISTRO=jazzy
+  export ROS_LOG_DIR="/home/neo/workspace/logs/ros"
 
   # Configure RMW environment
   if [[ $# -ne 0 ]]; then
@@ -37,6 +38,7 @@ ros2init() {
   fi
   export ROS_AUTOMATIC_DISCOVERY_RANGE=SUBNET
   export ROS_STATIC_PEERS=""
+  export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 
   # Configure RMW Zenoh environment
   export ZENOH_ROUTER_CHECK_ATTEMPTS=1
