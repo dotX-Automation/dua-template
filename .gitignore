@@ -3,6 +3,10 @@ build/*
 install/*
 log/*
 
+# Python build products
+__pycache__/
+*.py[cod]
+
 # Uncomment the following to avoid pushing personal configurations
 # .vscode/
 
