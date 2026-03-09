@@ -19,6 +19,7 @@
         "ms-python.python",
         "ms-python.autopep8",
         "njpwerner.autodocstring",
+        "ms-toolsai.jupyter",
         "ms-vscode.cpptools",
         "ms-vscode.cmake-tools",
         "ms-vscode.makefile-tools",
