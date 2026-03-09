@@ -115,11 +115,8 @@ function _ros2bag_validate_args {
 
   # For record mode, we need either 4 or 5 arguments
   if [[ "$1" == "record" ]]; then
-    # First check if --use-sim-time is present
-    local use_sim_time=false
+    # Shift past 'record' and optional --use-sim-time flag
     if [[ "$2" == "--use-sim-time" ]]; then
-      use_sim_time=true
-      # Shift arguments for easier validation
       shift 2
     else
       shift 1
