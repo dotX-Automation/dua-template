@@ -159,7 +159,7 @@ function ros2bag {
   function usage {
     echo >&2 "Usage:"
     echo >&2 "    ros2bag record [--use-sim-time] TOPICS_FILE OUTPUT_DIR CACHE_SIZE"
-    echo >&2 "    ros2bag play BAG_PATH [PLAY_OPTIONS...]"
+    echo >&2 "    ros2bag play BAG_PATH [--clock-rate N] [PLAY_OPTIONS...]"
     echo >&2 ""
     echo >&2 "Arguments for record mode:"
     echo >&2 "    --use-sim-time: Optional. If present, enables ROS time simulation support."
@@ -173,8 +173,9 @@ function ros2bag {
     echo >&2 "                    within one second of sampling."
     echo >&2 ""
     echo >&2 "Arguments for play mode:"
-    echo >&2 "    BAG_PATH:     Path to the ROS 2 bag directory."
-    echo >&2 "    PLAY_OPTIONS: Additional options to pass to ros2 bag play."
+    echo >&2 "    BAG_PATH:       Path to the ROS 2 bag directory."
+    echo >&2 "    --clock-rate N: Optional. Clock publishing rate in Hz (default: 10)."
+    echo >&2 "    PLAY_OPTIONS:   Additional options to pass to ros2 bag play."
     echo >&2 ""
     echo >&2 "The function will:"
     echo >&2 "    - In record mode: Start the recording process, which can be stopped with Ctrl+C."
@@ -287,9 +288,21 @@ function ros2bag {
   if [[ "$1" == "play" ]]; then
     # Shift away the command and bag path
     local bag_path="$2"
+    local clock_rate=10
     shift 2
+    # Parse optional --clock-rate argument
+    local remaining=()
+    while [[ $# -gt 0 ]]; do
+      if [[ "$1" == "--clock-rate" ]]; then
+        shift
+        clock_rate="$1"
+      else
+        remaining+=("$1")
+      fi
+      shift
+    done
     # Play the bag with standard options plus any additional ones
-    if ! ros2 bag play -p --clock 10 --wait-for-all-acked 5000 "$@" "$bag_path"; then
+    if ! ros2 bag play "$bag_path" -p --clock "$clock_rate" --wait-for-all-acked 5000 "${remaining[@]}"; then
       echo >&2 "ERROR: ros2 bag play failed"
       return 1
     fi
